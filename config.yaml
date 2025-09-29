@@ -1,0 +1,8 @@
+gateways:
+  duckdb:
+    connection:
+      type: duckdb
+      database: dmptool_migration.db
+
+model_defaults:
+  dialect: duckdb
