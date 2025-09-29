@@ -33,6 +33,7 @@ venv.bak/
 *.db
 *.db-*
 .sqlmesh/
+.cache/
 logs/
 .duckdb_history
 
@@ -56,3 +57,6 @@ Thumbs.db
 *.tmp
 *.temp
 /tmp/
+
+# Backup files
+*_backup/

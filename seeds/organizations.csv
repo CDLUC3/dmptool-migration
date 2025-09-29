@@ -1,0 +1,4 @@
+id,name,abbreviation,target_url,created_at,updated_at,is_other,sort_name,region_id,language_id,logo_uid,logo_name,contact_email,contact_name,managed,parent_id
+1,University of California,UC,https://www.universityofcalifornia.edu,2023-01-01 00:00:00,2023-01-01 00:00:00,0,university of california,1,1,uc_logo_123,uc-logo.png,info@universityofcalifornia.edu,UC Admissions,1,
+2,National Science Foundation,NSF,https://www.nsf.gov,2023-01-01 00:00:00,2023-01-01 00:00:00,0,national science foundation,2,1,nsf_logo_456,nsf-logo.png,contact@nsf.gov,NSF Contact,1,
+3,Marine Biology Lab,MBL,https://www.mbl.edu,2023-01-01 00:00:00,2023-01-01 00:00:00,0,marine biology lab,1,1,,,contact@mbl.edu,MBL Admin,0,1
