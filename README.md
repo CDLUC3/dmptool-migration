@@ -13,8 +13,9 @@ The `plans` table also has several foreign keys to tables that we will need to m
 - Clean up `registry_orgs` table which has a few duplicate `org_id` entries. Run the following query, the orgs in the `orgs` table likely need to be merged and the registry_org table updated to map to the merged org only:
 ```
 SELECT * FROM registry_orgs WHERE org_id IS NOT NULL AND org_id IN (
-  SELECT org_id
+  SELECT DISTINCT org_id
   FROM registry_orgs
+  WHERE org_id IS NOT NULL
   GROUP BY org_id
   HAVING COUNT(*) > 1
 );
