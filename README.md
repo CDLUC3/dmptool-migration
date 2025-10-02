@@ -9,6 +9,7 @@ The `plans` table also has several foreign keys to tables that we will need to m
 
 **PREP WORK:**
 - Create `affiliationDepartments` table in new system with `affiliationId`, `name` and `abbreviation`
+- Create a `templateLinks` and `versionedTemplateLinks` table in the new system with `templateId`, `versionedTemplateId`, ' `url` and `text`
 - Clean up `registry_orgs` table which has a few duplicate `org_id` entries. Run the following query, the orgs in the `orgs` table likely need to be merged and the registry_org table updated to map to the merged org only:
 ```
 SELECT * FROM registry_orgs WHERE org_id IS NOT NULL AND org_id IN (
