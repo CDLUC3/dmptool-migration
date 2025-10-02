@@ -33,14 +33,14 @@ These records can be mapped to the `users` table as:
 ```
 - orcid ----> users.orcid
 - sso_id ----> users.ssoId
-- users.firstname ----> users.givenName
-- users.surname ----> users.surName
-users.email                                         ----> userEmails (email, isPrimary = true, isConfirmed = true)
-- users.last_sign_in_at ----> users.last_sign_in
-- users.accept_terms ----> users.acceptedTerms
-- users.active ----> users.active
-- users.created_at ----> users.created
-- users.updated_at ----> users.modified
+- firstname ----> users.givenName
+- surname ----> users.surName
+- last_sign_in_at ----> users.last_sign_in
+- accept_terms ----> users.acceptedTerms
+- active ----> users.active
+- language ----> users.languageId
+- created_at ----> users.created
+- updated_at ----> users.modified
 ```
 
 There are also some fields that will require special handling before they can be moved into the new system:
