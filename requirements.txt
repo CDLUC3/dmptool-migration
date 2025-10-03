@@ -1,0 +1,1 @@
+sqlmesh[mysql]==0.224.0

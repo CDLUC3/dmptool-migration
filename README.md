@@ -1,6 +1,28 @@
 # dmptool-migration
 SQLMesh code to facilitate data migration from the old Rails DMP Tool to the new JS system
 
+## Requirements
+* Python 3.12
+
+## Setup
+Create venv:
+```
+python3 -m venv venv
+```
+
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+Create a `.env` file with the following variables, customising where appropriate:
+```bash
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=user
+DB_PASSWORD=password
+```
+
 ## Overview
 
 The current Rails system has a single `plans` table, a related `contributors` table, a related `answers` table and a related polymorphic `identifiers` table.
