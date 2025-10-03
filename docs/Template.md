@@ -4,6 +4,36 @@ new Node.js-based DMP Tool system.
 
 **These migrations cannot be run until [USERS migration](Users.md) and [AFFILIATIONS migration](Affiliations.md) have been completed.**
 
+---
+**Important:**
+We will need to decide how to handle the templates attached to the "Non Partner Institution" org:
+- 6 templates
+  - 2 have plans so we will need to re-attach them to a real org (e.g. UCOP)
+  - the others have no plans and were created prior to 2018 so we can likely delete them
+    
+Query to reattach those templates and delete the others:
+```sql
+# See the templates attached to the "Non Partner Institution" org (org_id = 0)
+SELECT id, title, created_at, org_id FROM templates WHERE org_id = 0;
+
+# Reattach the templates that have plans to UCOP
+UPDATE templates SET org_id = 15 WHERE id in (
+    SELECT DISTINCT templates.id 
+    FROM templates
+      LEFT JOIN plans ON templates.id = plans.template_id
+    WHERE templates.org_id = 0 AND plans.id IS NOT NULL    
+);
+
+# Delete the templates that have no plans and are attached to the "Non Partner Institution" org
+DELETE FROM templates WHERE org_id = 0 AND id IN (
+  SELECT DISTINCT templates.id
+  FROM templates
+    LEFT JOIN plans ON templates.id = plans.template_id
+  WHERE templates.org_id = 0 AND plans.id IS NULL
+);
+```
+---
+
 ### TEMPLATES (477 rows)
 ---
 
