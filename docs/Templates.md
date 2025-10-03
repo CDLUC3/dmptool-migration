@@ -45,7 +45,7 @@ The templating system is quite different in the new system. Some import things t
 
 **Use the family_id when building the id mapping table for templates.**
 
-### Language Considerations
+#### Language Considerations
 Here are a list of template `family_id` that are are written in `pt-BR`: 
 - 1577024021
 - 1316548433
@@ -56,8 +56,6 @@ Here are a list of template `family_id` that are are written in `pt-BR`:
 - 1704331608
 - 299352315
 - 1966612522
-
-#### Root Templates table
 
 We can use the following query to find the data for the `templates` table:
 ```sql

@@ -2,7 +2,7 @@
 This document outlines the plan to migrate data from the existing Rails-based DMP Tool system to the
 new Node.js-based DMP Tool system.
 
-**These migrations cannot be run until [USERS migration](Users.md), [AFFILIATIONS migration](Affiliations.md) and [TEMPLATE migration](Template.md) have been completed.**
+**These migrations cannot be run until [USERS migration](Users.md), [AFFILIATIONS migration](Affiliations.md) and [TEMPLATE migration](Templates.md) have been completed.**
 
 
 After the migration we will need to run scripts to assign a DMP ID to all the plans with a `TEMP#<id>` placeholder value. We then need to generate the DynamoDB common standard JSON records.

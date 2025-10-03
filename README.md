@@ -23,26 +23,66 @@ SELECT * FROM registry_orgs WHERE org_id IS NOT NULL AND org_id IN (
 );
 ```
 
+### Mapping tables to link ids from the old system to the new system
+
 We will likely need the following ID mapping tables:
 - templates -> templates
 - plans -> projects
 - research_domains -> researchDomains (see below for mapping)
-- users (we can likely just use the email address for to map)
+- users (we can just use the email address for to map)
 - affiliations (we will use the affiliations.uri for this, so no need to map)
 
-We do not have a concept of "Template Phases" in the new system, so lets ignore the plans that are based on templates that have phases for now.
+### Templates with Phases
+
+We do not have a concept of "Template Phases" in the new system. There are 55 templates in the old system that have multiple phases. These templates are used by 152 plans in the old system.
+
+There are 71 of these templates that have no plans associated with them.
+```sql
+SELECT orgs.id, orgs.name, templates.id, templates.title, templates.created_at, phases.template_id,
+  COUNT(DISTINCT plans.id) AS plan_count,
+  COUNT(phases.id) AS phase_count
+FROM phases
+  INNER JOIN templates ON phases.template_id = templates.id
+    LEFT JOIN plans ON templates.id = plans.id
+    LEFT JOIN orgs ON templates.org_id = orgs.id
+GROUP BY phases.template_id, templates.title, templates.created_at, phases.template_id
+HAVING phase_count > 1 AND plan_count < 1
+ORDER BY phase_count desc;
+```
+
+We have some options for how to handle these multi-phase templates and their associated plans:
+1. Make each phase a template in its own right and then for any plans that are using the template (with phase) we create a single project and then a plan for each of the phases (new templates). So for example:
+  - Template A has 3 phases
+  - We create Template A1, A2 and A3 in the new system
+  - Plan 123 is based on Template A 
+  - We create a single Project with 3 plans in the new system for Templates A1, A2 and A3
+2. Make the phases sections in the new system. We would need to determine how to flatten the phase-section relationship though. So for example:
+  - Template A has 3 phases
+  - We create Template A in the new system
+  - Each phase in Template A becomes a section in Template A
+  - Plan 123 is based on Template A 
+  - We create a single Project with a single plan in the new system for Template A
 
 Here is a query to see templates with multiple phases:
 ```
-SELECT phases.template_id, COUNT(phases.id) AS phase_count
+SELECT orgs.id, orgs.name, templates.id, templates.title, templates.created_at, phases.template_id,
+  COUNT(DISTINCT plans.id) AS plan_count,
+  COUNT(phases.id) AS phase_count
 FROM phases
-GROUP BY phases.template_id
+ INNER JOIN templates ON phases.template_id = templates.id
+   LEFT JOIN plans ON templates.id = plans.id
+   LEFT JOIN orgs ON templates.org_id = orgs.id
+GROUP BY phases.template_id, templates.title, templates.created_at, phases.template_id
 HAVING phase_count > 1
+AND plan_count > 0
 ORDER BY phase_count desc;
 ```
 
 The migrations should be run in the following order:
-1. [USERS](docs/Users.md)
+1. [MISCELLANEOUS](docs/Misc.md)
+2. [USERS](docs/Users.md)
 2. [AFFILIATIONS](docs/Affiliations.md)
 3. [TEMPLATES](docs/Templates.md)
-4. [PROJECTS](docs/Projects.md)
+4. [SECTIONS AND QUESTIONS](docs/SectionsAndQuestions.md)
+5. [PROJECTS, PLANS, ANSWERS](docs/Projects.md)
+6. [CONTRIBUTORS](docs/Contributors.md)
