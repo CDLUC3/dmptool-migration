@@ -4,6 +4,8 @@ new Node.js-based DMP Tool system.
 
 **These migrations cannot be run until [USERS migration](Users.md), [AFFILIATIONS migration](Affiliations.md) and [TEMPLATE migration](Template.md) have been completed.**
 
+After the migration we will need to run a script to generate the DMPHub JSON records
+
 ### PLANS (136,226 rows)
 ---
 The new system consists of projects, plans and fundings. Every project may have multiple plans and multiple fundings and each plan has a selected subset of fundings from its parent project. The old system though only has the concept of plans.
@@ -244,3 +246,4 @@ drafts.metadata
 drafts.created_at  
 drafts.updated_at
 
+Do NOT migrate over "pending" related works.
