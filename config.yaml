@@ -1,0 +1,23 @@
+gateways:
+  mysql:
+    connection:
+      type: mysql
+      host: {{ env_var('MYSQL_HOST') }}
+      port: {{ env_var('MYSQL_TCP_PORT') }}
+      user: {{ env_var('MYSQL_USER') }}
+      password: {{ env_var('MYSQL_PWD') }}
+  duckdb:
+    connection:
+      type: duckdb
+      database: duckdb.db
+
+default_gateway: mysql
+gateway_managed_virtual_layer: true
+
+model_defaults:
+  dialect: mysql
+  start: 2025-10-02
+
+variables:
+  super_admin_id: 1
+  time_zone: '+00:00'

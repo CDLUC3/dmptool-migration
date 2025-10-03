@@ -1,0 +1,162 @@
+test_affiliations:
+  model: migration.affiliations
+  vars:
+    execution_time: "2025-10-01 00:00:00+00:00"
+
+  inputs:
+    # ROR organisations
+    dmp.registry_orgs:
+      rows:
+        - id: 1
+          org_id: 2
+          ror_id: "https://ror.org/01an7q238"
+          fundref_id: "100006978"
+          name: "University of California, Berkeley (berkeley.edu)"
+          home_page: "https://www.berkeley.edu"
+          language: "en-US"
+          types: '["Education", "Funder"]'
+          acronyms: '["UCB"]'
+          aliases: '["Cal Berkeley", "UC Berkeley", "University of California at Berkeley"]'
+          country: '{"country_code": "US", "country_name": "United States"}'
+          file_timestamp: "2025-08-01 10:15:00"
+          created_at: "2023-02-08 12:44:14"
+          updated_at: "2025-08-02 09:23:56"
+          api_target: "apiTarget"
+
+    # DMP organisations
+    dmp.orgs:
+      rows:
+        # Does not map to any row in dmp.registry_orgs
+        - id: 1
+          name: "Institution"
+          abbreviation: "I"
+          target_url: "https://example.com"
+          created_at: "2022-01-01 12:35:00"
+          updated_at: "2023-01-01 00:00:00"
+          is_other: 0
+          language_id: 2
+          logo_uid: "path/to/logo1.png"
+          logo_name: "logo1.png"
+          contact_email: "library1@example.com"
+          org_type: 6
+          links: '{"org":[]}'
+          feedback_enabled: 0
+          feedback_msg: "Feedback message 1"
+          contact_name: "Contact name 1"
+          managed: 0
+          api_create_plan_email_subject: "Email subject 1"
+          api_create_plan_email_body: "Email body 1"
+          v5_pilot: 0
+
+        # Maps to dmp.registry_orgs.id 2
+        - id: 2
+          name: "University of California, Berkeley (UCB) (berkeley.edu)"
+          abbreviation: "UCB"
+          target_url: "https://www.lib.berkeley.edu/research/data-services"
+          created_at: "2024-01-01 12:35:00"
+          updated_at: "2025-01-01 00:00:00"
+          is_other: 0
+          language_id: 2
+          logo_uid: "path/to/logo2.png"
+          logo_name: "logo2.png"
+          contact_email: "library2@example.com"
+          org_type: 1
+          links: '{"org":[{"link":"https://www.berkeley.edu/","text":"University of California Berkeley"}]}'
+          feedback_enabled: 1
+          feedback_msg: "Feedback message 2"
+          contact_name: "Contact name 2"
+          managed: 1
+          api_create_plan_email_subject: "Email subject 2"
+          api_create_plan_email_body: "Email body 2"
+          v5_pilot: 1
+
+    # Maps to dmp.orgs based on identifiable_id
+    dmp.identifiers:
+      rows:
+        - id: 1
+          value: "ssoEntityId1"
+          identifier_scheme_id: 2
+          identifiable_id: 1
+          identifiable_type: "Org"
+          created_at: "2021-01-01 00:00:00"
+          updated_at: "2021-02-01 00:00:00"
+        - id: 2
+          value: "ssoEntityId2"
+          identifier_scheme_id: 2
+          identifiable_id: 2
+          identifiable_type: "Org"
+          created_at: "2022-01-01 00:00:00"
+          updated_at: "2022-02-01 00:00:00"
+
+    migration.ror_staging:
+      rows:
+        - uri: "https://ror.org/01an7q238"
+          provenance: "ROR"
+          name: "University of California, Berkeley"
+          displayName: "University of California, Berkeley (berkeley.edu)"
+          searchName: "University of California, Berkeley | berkeley.edu | Cal Berkeley | UC Berkeley | University of California at Berkeley"
+          funder: 1
+          fundrefId: "100006978"
+          homepage: "https://www.berkeley.edu"
+          acronyms: '["UCB"]'
+          aliases: '["Cal Berkeley","UC Berkeley","University of California at Berkeley"]'
+          types: '["EDUCATION","FUNDER"]'
+
+  outputs:
+    query:
+      rows:
+        # Non ROR based affiliations
+        - uri: "https://dmptool.org/affiliations/1"
+          provenance: "DMPTOOL"
+          name: "Institution"
+          displayName: "Institution"
+          searchName: "Institution | I | https://example.com"
+          funder: 0
+          fundrefId: null
+          homepage: "https://example.com"
+          acronyms: '["I"]'
+          aliases: '[]'
+          types: '["GOVERNMENT","OTHER"]'
+          logoURI: "path/to/logo1.png"
+          logoName: "logo1.png"
+          contactName: "Contact name 1"
+          contactEmail: "library1@example.com"
+          ssoEntityId: "ssoEntityId1"
+          feedbackEnabled: 0
+          feedbackMessage: "Feedback message 1"
+          feedbackEmails: '[]'
+          managed: 0
+          active: 1
+          apiTarget: null
+          createdById: 1
+          created: "2022-01-01 12:35:00"
+          modifiedById: 1
+          modified: "2023-01-01 00:00:00"
+
+        # ROR based affiliation
+        - uri: "https://ror.org/01an7q238"
+          provenance: "ROR"
+          name: "University of California, Berkeley"
+          displayName: "University of California, Berkeley (berkeley.edu)"
+          searchName: "University of California, Berkeley | berkeley.edu | Cal Berkeley | UC Berkeley | University of California at Berkeley"
+          funder: 1
+          fundrefId: "100006978"
+          homepage: "https://www.berkeley.edu"
+          acronyms: '["UCB"]'
+          aliases: '["Cal Berkeley","UC Berkeley","University of California at Berkeley"]'
+          types: '["EDUCATION","FUNDER"]'
+          logoURI: "path/to/logo2.png"
+          logoName: "logo2.png"
+          contactName: "Contact name 2"
+          contactEmail: "library2@example.com"
+          ssoEntityId: "ssoEntityId2"
+          feedbackEnabled: 1
+          feedbackMessage: "Feedback message 2"
+          feedbackEmails: '[]'
+          managed: 1
+          active: 1
+          apiTarget: "apiTarget"
+          createdById: 1
+          created: "2025-10-01 00:00:00+00:00"
+          modifiedById: 1
+          modified: "2025-10-01 00:00:00+00:00"

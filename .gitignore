@@ -1,3 +1,10 @@
 # Ignore IDE files
 .vscode/
 .idea/
+.env
+*.db
+logs
+.venv
+.cache
+__pycache__
+data
