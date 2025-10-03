@@ -4,7 +4,16 @@ new Node.js-based DMP Tool system.
 
 **These migrations cannot be run until [USERS migration](Users.md), [AFFILIATIONS migration](Affiliations.md) and [TEMPLATE migration](Template.md) have been completed.**
 
-After the migration we will need to run a script to generate the DMPHub JSON records
+
+After the migration we will need to run scripts to assign a DMP ID to all the plans with a `TEMP#<id>` placeholder value. We then need to generate the DynamoDB common standard JSON records.
+
+---
+**IMPORTANT:**
+There are 36 plans with a NULL `org_id`. We could run an additional pass/query to derive the affiliation information from the plan's owner. 
+The records however are older than 2020, have not been registered and are mostly test plans (11 are private). 
+Suggest we ignore these:
+`SELECT id, title, visibility, updated_at FROM plans WHERE org_id IS NULL order by updated_at desc;`
+---
 
 ### PLANS (136,226 rows)
 ---
@@ -23,6 +32,7 @@ SELECT plans.id, plans.dmp_id, plans.template_id, plans.title, plans.description
   languages.abbreviation AS language, roles.user_id AS owner_id, users.email as owner,
   plans.grant_number AS opportunity_id, identifiers.value AS grant_id,
   CASE plans.visibility WHEN 0 THEN 'ORGANIZATIONAL' WHEN 1 THEN 'PUBLIC' ELSE 'PRIVATE' END AS visibility,
+  CASE WHEN plans.visibility = 2 THEN true ELSE false END as is_test_plan,
   CASE plans.complete WHEN 1 THEN 'COMPLETE' ELSE 'DRAFT' END AS status,
   CASE 
   WHEN plans.org_id IS NULL THEN NULL
@@ -50,6 +60,7 @@ These records can be mapped to the `projects` table as:
 ```
 - title ----> projects.title
 - description ----> projects.abstractText
+- is_test_plan ----> projects.isTestProject
 - start_date ----> projects.startDate
 - end_date ----> projects.endDate
 - created_at ----> projects.created
@@ -59,33 +70,32 @@ These records can be mapped to the `projects` table as:
 There are also some fields that will require special handling before they can be moved into the `projects` table:
 ```
 - projects.research_domain_id -- projects.researchDomainId (use id mapping defined above in [RESEARCH DOMAINS](Misc.md) section)
-- projects.isTestProject -- (if visibility == 2 then true else false)
 ```
 
 These records can be mapped to the `plans` table as:
 ```
 - templateId
 - projectId
+- dmp_id ----> plans.dmpId
 - title ----> projects.title
 - featured ----> plans.featured
 - language ----> plans.languageId
+- status ----> plans.status
+- visibility ----> plans.visibility
+- registered_at ----> plans.registered
 - created_at ----> plans.created
 - updated_at ----> plans.modified
 ```
 
 There are also some fields that will require special handling before they can be moved into the `plans` table:
 ```
-- plans.dmpId -- (if `dmp_id` present, use as-is, otherwise we need to generate a placeholder 
-            something like `CONCAT("TEMP#", id)`)
-- plans.registered -- (if `dmp_id` is present use the `updated_at` value otherwise NULL)
-- plans.registeredById -- (if `dmp_id` is present use the plan's owner id otherwise NULL)
-- plans.status -- (if status == 1 then "COMPLETE" otherwise "DRAFT")
-- plans.visibility -- (CASE WHEN visibility == 0 THEN "ORGANIZATIONAL" WHEN visibility == 1 "PUBLIC" ELSE "PRIVATE" END)
+- plans.registeredById -- (user the registered_by email to lookup the id in the new system)
 ```
 
 These records can be mapped to the `projectFundings` table as:
 ```
 - projectId
+- funding_status ----> projectFundings.status
 - funder_id ----> projectFundings.affiliationId
 - grant_number ----> projectFundings.funderOpportunityNumber
 - grant_id ----> projectFundings.grantId
@@ -93,10 +103,6 @@ These records can be mapped to the `projectFundings` table as:
 - updated_at ----> projectFundings.modified
 ```
 
-There are also some fields that will require special handling before they can be moved into the `projectFundings` table:
-```
-projectFundings.status -- (CASE WHEN funding_status = 2 THEN "DENIED" WHEN funding_status = 1 THEN "GRANTED" ELSE "PLANNED" END)
-```
 
 These records can be mapped to the `planFundings` table as:
 ```
@@ -139,77 +145,6 @@ planMemberId
 memberRoleId -- (default to 15 "Other")
 ```
 
-#### Post migration
-
-We will need to auto generate/reserve DMP Ids for the ones we have added a temporary id for. To do this we will need to:
-- Run script to auto-generate DMP Ids
-
-#### Issues
-There are 36 plans with a NULL `org_id`. We could run an additional pass/query to derive the affiliation information from the plan's owner. The records however are older than 2020, have not been registered, and are mostly test plans (11 are private). `SELECT id, title, visibility, updated_at FROM plans WHERE org_id IS NULL order by updated_at desc;`
-
-Suggest we ignore these.
-
-
-### CONTRIBUTORS (94,883 rows)
--------------------
-The mapping for `contributors` in the old system to the `members` table in the new system is fairly straightforward.
-
-We will use the `plans.createdById` (the Plan's owner) from the new system as the `createdById` and `modifiedById` for all of these records.
-
-We can run the following query to retrieve the data:
-```
-SELECT contributors.id, plans.id AS plan_id, contributors.email, contributors.roles,
-  contributors.created_at, contributors.updated_at,
-  SUBSTRING_INDEX(contributors.name, ' ', 1) AS first_name,
-  SUBSTRING_INDEX(contributors.name, ' ', -1) AS last_name,
-  CASE 
-    WHEN contributors.org_id IS NULL THEN NULL
-    WHEN registry_orgs.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', contributors.org_id)
-    ELSE registry_orgs.ror_id
-  END AS affiliation_id
-FROM contributors
-  INNER JOIN plans ON contributors.plan_id = plans.id
-  LEFT JOIN orgs ON contributors.org_id = orgs.id
-    LEFT JOIN registry_orgs ON orgs.id = registry_orgs.org_id
-  LEFT JOIN identifiers AS orcid ON contributors.id = orcid.identifiable_id 
-      AND orcid.identifiable_type = 'Contributor' AND orcid.identifier_scheme_id = 1;
-```
-
-This record can be mapped to the `projectMembers` table as:
-```
-- projectId
-- affiliation_id ----> projectMembers.affiliationId
-- firstname ----> projectMembers.givenName
-- surname ----> projectMembers.surName
-- orcid ----> projectMembers.orcid
-- email ----> projectMembers.email
-- created_at ----> projectMembers.created
-- updated_at ----> projectMembers.modified
-```
-
-Then the `role` from the old system can be used to populate the `projectMemberRoles` table and `planMemberRoles` tables. It is a bit flag and will require some special handling to determine what equivalent roles to assign in the new system. Here is the bit flag mapping:
-```
-BASE_URL = 'https://credit.niso.org/contributor-roles'
-
-VALUE ----> NEW SYSTEM ROLE(S)
-------------------------------------------------------------------------------------------------------
-- 1 --> <BASE_URL>/data-curation
-- 2 --> <BASE_URL>/investigation
-- 3 --> <BASE_URL>/data-curation + <BASE_URL>/investigation
-- 4 --> <BASE_URL>/project-administration
-- 5 --> <BASE_URL>/data-curation + <BASE_URL>/project-administration
-- 6 --> <BASE_URL>/investigation + <BASE_URL>/project_administration
-- 7 --> <BASE_URL>/data_curation + <BASE_URL>/investigation + <BASE_URL>/project_administration
-- 8 --> http://dmptool.org/contributor_roles/other
-- 9 --> <BASE_URL>/data_curation + http://dmptool.org/contributor_roles/other
-- 10 --> <BASE_URL>/investigation + http://dmptool.org/contributor_roles/other
-- 11 --> <BASE_URL>/data_curation + <BASE_URL>/investigation + http://dmptool.org/contributor_roles/other
-- 12 --> <BASE_URL>/project_administration + http://dmptool.org/contributor_roles/other
-- 13 --> <BASE_URL>/data_curation + <BASE_URL>/project_administration + http://dmptool.org/contributor_roles/other
-- 14 --> <BASE_URL>/investigation + <BASE_URL>/project_administration + http://dmptool.org/contributor_roles/other
-- 15 --> <BASE_URL>/data_curation + <BASE_URL>/investigation + <BASE_URL>/project_administration + http://dmptool.org/contributor_roles/other
-```
-
 ### ANSWERS (308,909 rows)
 ---
 
@@ -234,7 +169,7 @@ FK: answers_question_options.question_option_id
 ### DRAFTS (77 rows)
 ---
 
-***There fewer than 100 Plans in this table in the old system. They are "uploaded" DMPs from the pilot project. We will hold off on these for now***
+***There are 77 Uploaded Plans in this table in the old system. They are "uploaded" DMPs from the pilot project. We will hold off on these for now***
 
 These will be good candidates for testing out the new system's API since the data is stored as JSON.
 
