@@ -1,25 +1,29 @@
 # --- Gateway Connection ---
 gateways:
-  mysql:
+  source:
     connection:
       # For more information on configuring the connection to your execution engine, visit:
       # https://sqlmesh.readthedocs.io/en/stable/reference/configuration/#connection
       # https://sqlmesh.readthedocs.io/en/stable/integrations/engines/mysql/#connection-options
       type: mysql
-      host: 
-      user: 
-      password: 
-      # concurrent_tasks: 4
-      # register_comments: True
-      # pre_ping: True
-      # pretty_sql: False
-      # schema_differ_overrides: 
-      # catalog_type_overrides: 
-      # port: 
-      # database: 
-      # charset: 
-      # collation: 
-      # ssl_disabled: 
+      charset: utf8mb4
+      host: {{ env_var('SOURCE_DB_HOST') }}
+      port: {{ env_var('SOURCE_DB_PORT') }}
+      user: {{ env_var('SOURCE_DB_USER') }}
+      password: {{ env_var('SOURCE_DB_PASSWORD') }}
+      database: {{ env_var('SOURCE_DB_NAME') }}
+      ssl_disabled: true
+
+  target:
+    connection:
+      type: mysql
+      charset: utf8mb4
+      host: {{ env_var('TARGET_DB_HOST') }}
+      port: {{ env_var('TARGET_DB_PORT') }}
+      user: {{ env_var('TARGET_DB_USER') }}
+      password: {{ env_var('TARGET_DB_PASSWORD') }}
+      database: {{ env_var('TARGET_DB_NAME') }}
+      ssl_disabled: true
 
 default_gateway: mysql
 
@@ -29,7 +33,7 @@ default_gateway: mysql
 model_defaults:
   dialect: mysql
   start: 2025-10-05 # Start date for backfill history
-  cron: '@daily'    # Run models daily at 12am UTC (can override per model)
+  cron: '@weekly'    # Run models daily at 12am UTC (can override per model)
 
 # --- Linting Rules ---
 # Enforce standards for your team
