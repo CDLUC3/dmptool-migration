@@ -2,6 +2,23 @@
 This document outlines the plan to migrate data from the existing Rails-based DMP Tool system to the
 new Node.js-based DMP Tool system.
 
+### TAGS (15 rows)
+---
+We will copy over all of the old system's existing themes as tags in the new system.
+```sql
+SELECT id, title, description, created_at, updated_at FROM themes ORDER BY id;
+```
+
+These records can be mapped to the `tags` table as:
+```
+- title ----> themes.name
+- description ----> themes.description
+- created_at ----> tags.created
+- updated_at ----> tags.modified
+- createdById ----> (we can set this to a super admin user id)
+- modifiedById ----> (we can set this to a super admin user id)
+```
+
 ### RESEARCH DOMAINS (48 rows)
 ---
 Research domains are already in the new system. Here is a mapping between the ids in the old system (left side) and the ids in the new system (right side):

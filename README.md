@@ -10,6 +10,8 @@ The `plans` table also has several foreign keys to tables that we will need to m
 **PREP WORK:**
 - Create `affiliationDepartments` table in new system with `affiliationId`, `name` and `abbreviation`
 - Create a `templateLinks` and `versionedTemplateLinks` table in the new system with `templateId`, `versionedTemplateId`, ' `url` and `text`
+- Add additional indices to tables to speed up migration queries:
+  -  answers_question_options -> (question_option_id)
 - Clean up users attached to the "Non Partner Institution" org (id=1). See the [Users doc](docs/Users.md) for more details.
 ```
 - Clean up `registry_orgs` table which has a few duplicate `org_id` entries. Run the following query, the orgs in the `orgs` table likely need to be merged and the registry_org table updated to map to the merged org only:
@@ -26,11 +28,23 @@ SELECT * FROM registry_orgs WHERE org_id IS NOT NULL AND org_id IN (
 ### Mapping tables to link ids from the old system to the new system
 
 We will likely need the following ID mapping tables:
-- templates -> templates
-- plans -> projects
+- themes [id] -> tags [id]
+- templates [family_id, version] -> templates [id] and versionedTemplates [id]
+- sections [id] -> sections [id] and versionedSections [id]
+- questions [id] -> questions [id] and versionedQuestions [id]
+- plans [id] -> projects [id] and plans [id]
+- answers [id] -> answers [id]
 - research_domains -> researchDomains (see below for mapping)
 - users (we can just use the email address for to map)
 - affiliations (we will use the affiliations.uri for this, so no need to map)
+
+## Questions / Issues
+
+### Organizations
+We have a lot of junk and duplicate orgs in the old system. We should clean these up before we do the migration. Here is a query to help identify some of these:
+```sql
+
+```
 
 ### Templates with Phases
 
