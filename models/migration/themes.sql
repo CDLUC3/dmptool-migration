@@ -1,4 +1,4 @@
---   Target schema:
+--   Target schema (table `tags`):
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
 --  `role` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RESEARCHER',
@@ -25,42 +25,18 @@
 --  `modifiedById` int DEFAULT NULL,
 
 MODEL (
-  name migration.users,
+  name migration.themes,
   kind FULL,
   audits (
-    assert_row_count(dmp_table:='users', blocking := false),
+    assert_row_count(dmp_table:='themes', blocking := false),
   ),
   enabled true
 );
 
 SELECT
-  u.id,
-  u.firstname,
-  u.surname,
-  u.email,
-  u.created_at,
-  u.updated_at,
-  u.accept_terms,
-  u.active,
-  u.last_sign_in_at,
-  l.abbreviation AS language,
-  orc.value AS orcid,
-  sso.value AS sso_id,
-  false AS locked,
-  encrypted_password AS `password`,
-  CASE
-    WHEN u.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
-    ELSE ro.ror_id
-  END AS org_id,
-  CASE
-    WHEN (SELECT up.perm_id FROM dmp.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
-    WHEN (SELECT COUNT(up.perm_id) FROM dmp.users_perms AS up WHERE up.user_id = u.id AND up.perm_id != 10) THEN 'ADMIN'
-    ELSE 'RESEARCHER'
-  END AS role
-FROM dmp.users AS u
-  LEFT JOIN dmp.languages AS l ON u.language_id = l.id
-  INNER JOIN dmp.orgs AS o ON u.org_id = o.id
-  	LEFT JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
-  LEFT JOIN dmp.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
-  LEFT JOIN dmp.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2;
+  dmp.themes.id,
+  dmp.themes.title,
+  dmp.themes.description,
+  dmp.themes.created_at,
+  dmp.themes.updated_at
+FROM dmp.themes;
