@@ -33,6 +33,7 @@ The `plans` table also has several foreign keys to tables that we will need to m
 **PREP WORK:**
 - Create `affiliationDepartments` table in new system with `affiliationId`, `name` and `abbreviation`
 - Create a `templateLinks` and `versionedTemplateLinks` table in the new system with `templateId`, `versionedTemplateId`, ' `url` and `text`
+- Add `oldPasswordHash` field to the `users` table in the new system (nullable)
 - Add additional indices to tables to speed up migration queries:
   -  answers_question_options -> (question_option_id)
 - Clean up users attached to the "Non Partner Institution" org (id=1). See the [Users doc](docs/Users.md) for more details.

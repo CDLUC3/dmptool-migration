@@ -36,9 +36,9 @@ The migration of user data is probably the most straightforward. We can run the 
 ```
 SELECT users.id, users.firstname, users.surname, users.email, users.created_at, users.updated_at, 
   users.accept_terms, users.last_sign_in_at, languages.abbreviation AS language, 
+  users.encrypted_password, users.active,
   o.value AS orcid, s.value AS sso_id,
   false AS locked,
-  '$2a$10$f3wCBdUVt/2aMcPOb.GX1OBO9WMGxDXx5HKeSBBnrMhat4.pis4Pe' AS `password`,
   CASE 
     WHEN users.org_id IS NULL THEN NULL
     WHEN registry_orgs.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', orgs.id)
@@ -73,7 +73,8 @@ These records can be mapped to the `users` table as:
 - active ----> users.active
 - language ----> users.languageId
 - role ----> users.role
-- password ----> users.password
+- encrypted_password ----> users.oldPasswordHash
+- encrypted_password ----> users.password (won't work, but we need something in this field)
 - locked ----> users.locked
 - created_at ----> users.created
 - updated_at ----> users.modified
