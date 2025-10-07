@@ -1,6 +1,29 @@
 # dmptool-migration
 SQLMesh code to facilitate data migration from the old Rails DMP Tool to the new JS system
 
+## Requirements
+* Python 3.12
+
+## Setup
+Create venv:
+```
+python3 -m venv venv
+```
+
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+Create a `.env` file with the following variables, customising where appropriate:
+```bash
+MYSQL_DATABASE=migration
+MYSQL_HOST=localhost
+MYSQL_TCP_PORT=3306
+MYSQL_USER=user
+MYSQL_PWD=password
+```
+
 ## Overview
 
 The current Rails system has a single `plans` table, a related `contributors` table, a related `answers` table and a related polymorphic `identifiers` table.
@@ -100,3 +123,21 @@ The migrations should be run in the following order:
 4. [SECTIONS AND QUESTIONS](docs/SectionsAndQuestions.md)
 5. [PROJECTS, PLANS, ANSWERS](docs/Projects.md)
 6. [CONTRIBUTORS](docs/Contributors.md)
+
+## Running Migrations
+Load ROR data file:
+```bash
+python3 ./scripts/transform_ror.py
+set -a; source .env; set +a
+duckdb ':memory:' < ./scripts/load_ror_staging.sql
+```
+
+Run SQLMesh plan in a dev environment:
+```bash
+sqlmesh plan [environment name]
+```
+
+Run SQLMesh plan in the prod environment:
+```bash
+sqlmesh plan
+```
