@@ -26,10 +26,6 @@ MYSQL_PWD=password
 
 ## Overview
 
-The current Rails system has a single `plans` table, a related `contributors` table, a related `answers` table and a related polymorphic `identifiers` table.
-
-The `plans` table also has several foreign keys to tables that we will need to move first: `research_domains`, `orgs` and `users` and `templates`.
-
 **PREP WORK:**
 - Create `affiliationDepartments` table in new system with `affiliationId`, `name` and `abbreviation`
 - Create a `templateLinks` and `versionedTemplateLinks` table in the new system with `templateId`, `versionedTemplateId`, ' `url` and `text`

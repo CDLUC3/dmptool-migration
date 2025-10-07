@@ -10,6 +10,13 @@
 MODEL (
   name migration.themes,
   kind FULL,
+  columns (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+  ),
   audits (
     assert_row_count(dmp_table:='themes', blocking := false),
   ),
@@ -17,7 +24,6 @@ MODEL (
 );
 
 SELECT
-  dmp.themes.id,
   dmp.themes.title,
   dmp.themes.description,
   dmp.themes.created_at,

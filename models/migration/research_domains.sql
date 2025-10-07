@@ -12,6 +12,13 @@
 MODEL (
   name migration.research_domains,
   kind FULL,
+  columns (
+    id INT,
+    parent_id INT,
+    name VARCHAR(255) NOT NULL,
+    uri VARCHAR(255) NOT NULL,
+    description VARCHAR(255)
+  ),
   audits (
     assert_row_count(dmp_table:='research_domains', blocking := false),
   ),
