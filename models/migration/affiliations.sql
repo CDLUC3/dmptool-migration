@@ -31,6 +31,7 @@ MODEL (
   name migration.affiliations,
   kind FULL,
   columns (
+    id INT NOT NULL,
     uri VARCHAR(255) NOT NULL,
     provenance VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -58,11 +59,15 @@ MODEL (
     modifiedById INT NOT NULL,
     modified TIMESTAMP NOT NULL
   ),
+  audits (
+    unique_values(columns := (id, uri, displayName), blocking := false)
+  ),
   enabled true
 );
 
 WITH ror_orgs AS (
   SELECT
+    ro.org_id,
     ro.ror_id,
     i.value AS ssoEntityId,
     ro.api_target,
@@ -92,6 +97,7 @@ non_ror_orgs AS (
 
 ---- ROR based affiliations
 SELECT
+  ro.org_id AS id, -- TODO: need to generate new integer IDs for ROR orgs not mapped to org table
   rs.uri AS uri,
   rs.provenance AS provenance,
   rs.name AS name,
@@ -125,25 +131,25 @@ UNION ALL
 
 -- Non ROR based affiliations
 SELECT
+  nro.id,
   CONCAT('https://dmptool.org/affiliations/', nro.id) AS uri,
   'DMPTOOL' AS provenance,
   nro.name AS name,
   nro.name AS displayName,
   CONCAT_WS(' | ', nro.name, nro.abbreviation, nro.target_url) AS searchName,
-  nro.org_type IN (2, 3, 4, 5) AS funder,
+  nro.org_type IN (2, 3, 6, 7) AS funder,
   NULL AS fundrefId,
   nro.target_url AS homepage,
   IF(nro.abbreviation IS NOT NULL, JSON_ARRAY(nro.abbreviation), JSON_ARRAY()) AS acronyms,
   JSON_ARRAY() AS aliases,
   CASE
-    WHEN nro.org_type = 1 THEN JSON_ARRAY('EDUCATION')
-    WHEN nro.org_type = 2 THEN JSON_ARRAY('GOVERNMENT')
-    WHEN nro.org_type = 3 THEN JSON_ARRAY('EDUCATION', 'GOVERNMENT')
-    WHEN nro.org_type = 4 THEN JSON_ARRAY('OTHER')
-    WHEN nro.org_type = 5 THEN JSON_ARRAY('EDUCATION', 'OTHER')
-    WHEN nro.org_type = 6 THEN JSON_ARRAY('GOVERNMENT', 'OTHER')
-    WHEN nro.org_type = 7 THEN JSON_ARRAY('EDUCATION', 'GOVERNMENT', 'OTHER')
-    ELSE JSON_ARRAY('EDUCATION')
+    WHEN nro.org_type = 2 THEN '["GOVERNMENT"]'
+    WHEN nro.org_type = 3 THEN '["EDUCATION", "GOVERNMENT"]'
+    WHEN (nro.org_type = 4 AND LOWER(nro.name) LIKE '%college%' OR LOWER(nro.name) LIKE '%university%' OR LOWER(nro.name) LIKE '%school%') THEN '["EDUCATION"]'
+    WHEN (nro.org_type = 4 AND LOWER(nro.name) NOT LIKE '%college%' AND LOWER(nro.name) NOT LIKE '%university%' AND LOWER(nro.name) NOT LIKE '%school%') THEN '["OTHER"]'
+    WHEN nro.org_type IN (5, 6) THEN '["NONPROFIT"]'
+    WHEN nro.org_type = 7 THEN '["EDUCATION", "GOVERNMENT", "OTHER"]'
+    ELSE '["EDUCATION"]'
   END AS types,
   nro.logo_uid AS logoURI,
   nro.logo_name AS logoName,
