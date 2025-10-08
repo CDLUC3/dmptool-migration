@@ -29,6 +29,7 @@ MYSQL_PWD=password
 **PREP WORK:**
 - Create `affiliationDepartments` table in new system with `affiliationId`, `name` and `abbreviation`
 - Create a `templateLinks` and `versionedTemplateLinks` table in the new system with `templateId`, `versionedTemplateId`, ' `url` and `text`
+- Add `slug` field to the `tags` table in the new system (unique, not null)
 - Clean up `users` by reducing the perms for users who are no longer super admin! `DELETE FROM users_perms WHERE perm_id IN (3, 10) AND user_id IN (13785, 16995, 9032, 52693, 2240, 136507, 136508);`
 - Add `oldPasswordHash` field to the `users` table in the new system (nullable)
 - Add additional indices to tables to speed up migration queries:

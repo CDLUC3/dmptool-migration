@@ -1,11 +1,11 @@
-# Column definitions for the external MySQL database `dmp`. We include these here to help
-# deal with columns types that cannot be derived automatically by mysqlmesh.
-#
-# DO NOT RUN `mysqlmesh create_external_models` AS THIS WILL REPLACE THIS FILE AND BREAK THE
-# DUCKDB TESTS!
-#
+
 - name: '`dmp`.`research_domains`'
   columns:
     id: BIGINT
+    identifier: VARCHAR(255)
+    label: VARCHAR(255)
     parent_id: BIGINT
+    created_at: DATETIME
+    updated_at: DATETIME
   gateway: mysql
+

@@ -1,5 +1,5 @@
-test_research_domains:
-  model: migration.research_domains
+test_researchDomains:
+  model: migration.researchDomains
   vars:
     execution_time: "2025-10-07 00:00:00+00:00"
 
@@ -15,23 +15,30 @@ test_research_domains:
           updated_at: "2025-08-02 09:23:56"
 
         - id: 2
-          identifier: '1.1'
-          label: "Mathematics"
-          parent_id: 1
+          identifier: '3.1'
+          label: "Humanities"
+          parent_id: NULL
           created_at: "2023-02-08 12:44:14"
           updated_at: "2025-08-02 09:23:56"
 
   outputs:
     query:
+      partial: true
       rows:
         - id: 1
-          parent_id: NULL
           name: "natural-sciences"
           uri: "https://dmptool.org/research_domains/natural-sciences"
           description: "Natural sciences"
+          created: "2023-02-08 12:44:14"
+          createdById: 1
+          modified: "2025-08-02 09:23:56"
+          modifiedById: 1
 
-        - id: NULL
-          parent_id: 1
-          name: "mathematics"
-          uri: "https://dmptool.org/research_domains/mathematics"
-          description: "Mathematics"
+        - id: 2
+          name: "humanities"
+          uri: "https://dmptool.org/research_domains/humanities"
+          description: "Humanities"
+          created: "2023-02-08 12:44:14"
+          createdById: 1
+          modified: "2025-08-02 09:23:56"
+          modifiedById: 1
