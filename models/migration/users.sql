@@ -1,6 +1,7 @@
 --   Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `oldPasswordHash` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 --  `role` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RESEARCHER',
 --  `givenName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
 --  `surName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
