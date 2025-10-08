@@ -30,7 +30,7 @@ test_research_domains:
           uri: "https://dmptool.org/research_domains/natural-sciences"
           description: "Natural sciences"
 
-        - id: 2
+        - id: NULL
           parent_id: 1
           name: "mathematics"
           uri: "https://dmptool.org/research_domains/mathematics"
