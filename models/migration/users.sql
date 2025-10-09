@@ -35,28 +35,33 @@ MODEL (
 );
 
 SELECT
-  dmp.users.id,
-  dmp.users.firstname,
-  dmp.users.surname,
-  dmp.users.email,
-  dmp.users.password,
-  dmp.users.created_at,
-  dmp.users.updated_at,
-  dmp.users.accept_terms,
-  dmp.users.last_sign_in_at,
-  dmp.languages.abbreviation AS language,
-  o.value AS orcid,
-  s.value AS sso_id,
+  u.id,
+  u.firstname,
+  u.surname,
+  u.email,
+  u.created_at,
+  u.updated_at,
+  u.accept_terms,
+  u.active,
+  u.last_sign_in_at,
+  l.abbreviation AS language,
+  orc.value AS orcid,
+  sso.value AS sso_id,
+  false AS locked,
+  encrypted_password AS `password`,
   CASE
-    WHEN dmp.users.org_id IS NULL THEN NULL
-    WHEN dmp.registry_orgs.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', dmp.orgs.id)
-    ELSE dmp.registry_orgs.ror_id
+    WHEN u.org_id IS NULL THEN NULL
+    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+    ELSE ro.ror_id
   END AS org_id,
-  (SELECT perm_id FROM dmp.users_perms WHERE dmp.users_perms.user_id = dmp.users.id AND perm_id = 10) is_super,
-  (SELECT COUNT(perm_id) FROM dmp.users_perms WHERE dmp.users_perms.user_id = dmp.users.id AND perm_id != 10) is_admin
-FROM dmp.users
-LEFT JOIN dmp.languages ON dmp.users.language_id = dmp.languages.id
-INNER JOIN dmp.orgs ON dmp.users.org_id = dmp.orgs.id
-LEFT JOIN dmp.registry_orgs ON dmp.orgs.id = dmp.registry_orgs.org_id
-LEFT JOIN dmp.identifiers o ON o.identifiable_type = 'User' AND o.identifiable_id = dmp.users.id AND o.identifier_scheme_id = 1
-LEFT JOIN dmp.identifiers s ON s.identifiable_type = 'User' AND s.identifiable_id = dmp.users.id AND s.identifier_scheme_id = 2;
+  CASE
+    WHEN (SELECT up.perm_id FROM dmp.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
+    WHEN (SELECT COUNT(up.perm_id) FROM dmp.users_perms AS up WHERE up.user_id = u.id AND up.perm_id != 10) THEN 'ADMIN'
+    ELSE 'RESEARCHER'
+  END AS role
+FROM dmp.users AS u
+  LEFT JOIN dmp.languages AS l ON u.language_id = l.id
+  INNER JOIN dmp.orgs AS o ON u.org_id = o.id
+  	LEFT JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
+  LEFT JOIN dmp.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
+  LEFT JOIN dmp.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2;

@@ -72,4 +72,3 @@ Research domains are already in the new system. Here is a mapping between the id
 47 -> 47	art
 48 -> 48	other-humanities
 ```
-
