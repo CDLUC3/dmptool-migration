@@ -11,7 +11,7 @@ MODEL (
   name migration.tags,
   kind FULL,
   columns (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id INT UNSIGNED PRIMARY KEY,
     slug VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -29,12 +29,12 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY dmp.themes.created_at) AS id,
-  LOWER(REPLACE(dmp.themes.title, ' ', '-')) AS slug,
-  dmp.themes.title AS name,
-  dmp.themes.description,
-  dmp.themes.created_at AS created,
+  ROW_NUMBER() OVER () AS id,
+  LOWER(REPLACE(t.title, ' ', '-')) AS slug,
+  t.title AS name,
+  t.description,
+  t.created_at AS created,
   @VAR('super_admin_id') AS createdById,
-  dmp.themes.updated_at AS modified,
+  t.updated_at AS modified,
   @VAR('super_admin_id') AS modifiedById
-FROM dmp.themes;
+FROM dmp.themes AS t;

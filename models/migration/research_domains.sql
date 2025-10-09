@@ -10,10 +10,10 @@
 --  `modifiedById` int DEFAULT NULL,
 
 MODEL (
-  name migration.researchDomains,
+  name migration.research_domains,
   kind FULL,
   columns (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT UNSIGNED PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     uri VARCHAR(255) NOT NULL,
     description VARCHAR(255),
@@ -23,7 +23,6 @@ MODEL (
     modifiedById INT
   ),
   audits (
-    assert_row_count(dmp_table:='research_domains', blocking := false),
     unique_values(columns := (name, uri)),
     not_null(columns := (name, uri, created, createdById, modified, modifiedById))
   ),
@@ -31,7 +30,7 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY dmp.research_domains.created_at) AS id,
+  ROW_NUMBER() OVER () AS id,
   REPLACE(LOWER(rd.label), ' ', '-') AS name,
   CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(rd.label), ' ', '-')) AS uri,
   rd.label AS description,
