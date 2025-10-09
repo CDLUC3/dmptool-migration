@@ -1,0 +1,226 @@
+test_templates:
+  model: migration.templates
+
+  inputs:
+    dmp.orgs:
+      rows:
+        - id: 1
+          name: "Example University"
+
+        - id: 2
+          name: "Another University"
+
+    dmp.registry_orgs:
+      rows:
+        - id: 1
+          org_id: 2
+          ror_id: "https://ror.org/xxxxxxxx"
+
+    dmp.users:
+      rows:
+        - id: 1
+          email: "admin@example.com"
+          org_id: 1
+          created_at: "2025-09-15 06:14:14"
+
+        - id: 2
+          email: "admin2@example.com"
+          org_id: 1
+          created_at: "2025-09-20 06:14:14"
+
+        - id: 3
+          email: "tester@example.com"
+          org_id: 1
+          created_at: "2025-09-15 06:14:14"
+
+        - id: 4
+          email: "super@example.com"
+          org_id: 2
+          created_at: "2025-09-15 06:14:14"
+
+    dmp.users_perms:
+      rows:
+        - id: 1
+          user_id: 1
+          perm_id: 6
+
+        - id: 2
+          user_id: 2
+          perm_id: 6
+
+        - id: 3
+          user_id: 3
+          perm_id: 5
+
+        - id: 4
+          user_id: 4
+          perm_id: 1
+
+        - id: 5
+          user_id: 4
+          perm_id: 6
+
+    migration.users:
+      rows:
+        - id: 12345
+          email: "admin@example.com"
+
+        - id: 9876
+          email: "admin2@example.com"
+
+        - id: 67890
+          email: "tester2@example.com"
+
+        - id: 54321
+          email: "super@example.com"
+
+    dmp.templates:
+      columns:
+        customization_of: INT
+      rows:
+        - id: 1
+          title: "Published Organizational Template"
+          description: "<p class=\"Normal\">Test published organizational template</p>"
+          published: 1
+          org_id: 1
+          locale: "en-US"
+          is_default: 0
+          created_at: "2025-09-01 01:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 1
+          visibility: 0
+          customization_of: null
+          family_id: 12345
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        - id: 2
+          title: "Published Public Template"
+          description: "<p class=\"Normal\">Test published template</p>"
+          published: 1
+          org_id: 1
+          locale: "pt-BR"
+          is_default: 0
+          created_at: "2025-09-02 02:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 2
+          visibility: 1
+          customization_of: null
+          family_id: 98765
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        - id: 3
+          title: "Unpublished Template"
+          description: "<p class=\"Normal\">Test unpublished template</p>"
+          published: 0
+          org_id: 1
+          locale: "en-US"
+          is_default: 0
+          created_at: "2025-09-03 03:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 0
+          visibility: 1
+          customization_of: null
+          family_id: 54321
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        - id: 4
+          title: "Best Practice Template"
+          description: "<p class=\"Normal\">Test best practice template</p>"
+          published: 0
+          org_id: 2
+          locale: "en-US"
+          is_default: 1
+          created_at: "2025-01-01 04:14:14"
+          updated_at: "2025-01-01 11:33:17"
+          version: 5
+          visibility: 1
+          customization_of: null
+          family_id: 67890
+          archived: 0
+          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
+
+        - id: 5
+          title: "Customization of a Template"
+          description: "<p class=\"Normal\">Template customization</p>"
+          published: 1
+          org_id: 2
+          locale: "en-US"
+          is_default: 0
+          created_at: "2025-09-15 05:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 1
+          visibility: 0
+          customization_of: 67890
+          family_id: 90909
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+  outputs:
+    query:
+      rows:
+        - id: 1
+          family_id: 67890
+          name: "Best Practice Template"
+          description: "<p class=\"Normal\">Test best practice template</p>"
+          bestPractice: true
+          latestPublishVisibility: "PUBLIC"
+          isDirty: true
+          latestPublishVersion: "v4"
+          latestPublishDate: "2025-01-01 11:33:17"
+          ownerId: "https://ror.org/xxxxxxxx"
+          languageId: 'en-US'
+          created: "2025-01-01 04:14:14"
+          createdById: 54321
+          modified: "2025-01-01 11:33:17"
+          modifiedById: 54321
+
+        - id: 2
+          family_id: 12345
+          name: "Published Organizational Template"
+          description: "<p class=\"Normal\">Test published organizational template</p>"
+          bestPractice: false
+          latestPublishVisibility: "ORGANIZATIONAL"
+          isDirty: false
+          latestPublishVersion: "v1"
+          latestPublishDate: "2025-09-15 11:33:17"
+          ownerId: "https://dmptool.org/affiliations/1"
+          languageId: 'en-US'
+          created: "2025-09-01 01:14:14"
+          createdById: 9876
+          modified: "2025-09-15 11:33:17"
+          modifiedById: 9876
+
+        - id: 3
+          family_id: 98765
+          name: "Published Public Template"
+          description: "<p class=\"Normal\">Test published template</p>"
+          bestPractice: false
+          latestPublishVisibility: "PUBLIC"
+          isDirty: false
+          latestPublishVersion: "v2"
+          latestPublishDate: "2025-09-15 11:33:17"
+          ownerId: "https://dmptool.org/affiliations/1"
+          languageId: 'pt-BR'
+          created: "2025-09-02 02:14:14"
+          createdById: 9876
+          modified: "2025-09-15 11:33:17"
+          modifiedById: 9876
+
+        - id: 4
+          family_id: 54321
+          name: "Unpublished Template"
+          description: "<p class=\"Normal\">Test unpublished template</p>"
+          bestPractice: false
+          latestPublishVisibility: "PUBLIC"
+          isDirty: true
+          latestPublishVersion: null
+          latestPublishDate: null
+          ownerId: "https://dmptool.org/affiliations/1"
+          languageId: 'en-US'
+          created: "2025-09-03 03:14:14"
+          createdById: 9876
+          modified: "2025-09-15 11:33:17"
+          modifiedById: 9876
