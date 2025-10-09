@@ -105,37 +105,8 @@ test_affiliations:
   outputs:
     query:
       rows:
-        # Non ROR based affiliations
-        - id: 1
-          uri: "https://dmptool.org/affiliations/1"
-          provenance: "DMPTOOL"
-          name: "Institution"
-          displayName: "Institution"
-          searchName: "Institution | I | https://example.com"
-          funder: 1
-          fundrefId: null
-          homepage: "https://example.com"
-          acronyms: '["I"]'
-          aliases: '[]'
-          types: '["NONPROFIT"]'
-          logoURI: "path/to/logo1.png"
-          logoName: "logo1.png"
-          contactName: "Contact name 1"
-          contactEmail: "library1@example.com"
-          ssoEntityId: "ssoEntityId1"
-          feedbackEnabled: 0
-          feedbackMessage: "Feedback message 1"
-          feedbackEmails: '[]'
-          managed: 0
-          active: 1
-          apiTarget: null
-          createdById: 1
-          created: "2022-01-01 12:35:00"
-          modifiedById: 1
-          modified: "2023-01-01 00:00:00"
-
         # ROR based affiliation
-        - id: 2
+        - id: 1
           uri: "https://ror.org/01an7q238"
           provenance: "ROR"
           name: "University of California, Berkeley"
@@ -162,3 +133,32 @@ test_affiliations:
           created: "2025-10-01 00:00:00"
           modifiedById: 1
           modified: "2025-10-01 00:00:00"
+
+        # Non ROR based affiliations
+        - id: 2
+          uri: "https://dmptool.org/affiliations/1"
+          provenance: "DMPTOOL"
+          name: "Institution"
+          displayName: "Institution"
+          searchName: "Institution | I | https://example.com"
+          funder: 1
+          fundrefId: null
+          homepage: "https://example.com"
+          acronyms: '["I"]'
+          aliases: '[]'
+          types: '["NONPROFIT"]'
+          logoURI: "path/to/logo1.png"
+          logoName: "logo1.png"
+          contactName: "Contact name 1"
+          contactEmail: "library1@example.com"
+          ssoEntityId: "ssoEntityId1"
+          feedbackEnabled: 0
+          feedbackMessage: "Feedback message 1"
+          feedbackEmails: '[]'
+          managed: 0
+          active: 1
+          apiTarget: null
+          createdById: 1
+          created: "2022-01-01 12:35:00"
+          modifiedById: 1
+          modified: "2023-01-01 00:00:00"

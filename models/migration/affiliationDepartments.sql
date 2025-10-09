@@ -2,12 +2,13 @@ MODEL (
   name migration.affiliation_departments,
   kind FULL,
   columns (
-    id VARCHAR(255) NOT NULL,
+    id INT UNSIGNED NOT NULL,
+    affiliationId VARCHAR(255) NOT NULL,
     name VARCHAR(255),
     code VARCHAR(255),
-    createdById INT NOT NULL,
+    createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL,
-    modifiedById INT NOT NULL,
+    modifiedById INT UNSIGNED NOT NULL,
     modified TIMESTAMP NOT NULL
   ),
   audits (
@@ -17,10 +18,11 @@ MODEL (
 );
 
 SELECT
+  ROW_NUMBER() OVER () AS id,
   CASE
     WHEN ro.org_id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
     ELSE ro.ror_id
-  END AS id,
+  END AS affiliationId,
   d.name,
   d.code,
   @VAR('super_admin_id') AS createdById,

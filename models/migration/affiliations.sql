@@ -31,7 +31,7 @@ MODEL (
   name migration.affiliations,
   kind FULL,
   columns (
-    id INT NOT NULL,
+    id INT UNSIGNED NOT NULL,
     uri VARCHAR(255) NOT NULL,
     provenance VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -54,9 +54,9 @@ MODEL (
     managed BOOLEAN NOT NULL DEFAULT 0,
     active BOOLEAN NOT NULL DEFAULT 1,
     apiTarget VARCHAR(255),
-    createdById INT NOT NULL,
+    createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL,
-    modifiedById INT NOT NULL,
+    modifiedById INT UNSIGNED NOT NULL,
     modified TIMESTAMP NOT NULL
   ),
   audits (
@@ -93,77 +93,87 @@ non_ror_orgs AS (
   LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
   LEFT JOIN dmp.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
   WHERE ro.id IS NULL -- Where no ROR org was mapped to orgs table
-)
+),
 
 ---- ROR based affiliations
-SELECT
-  ro.org_id AS id, -- TODO: need to generate new integer IDs for ROR orgs not mapped to org table
-  rs.uri AS uri,
-  rs.provenance AS provenance,
-  rs.name AS name,
-  rs.displayName AS displayName,
-  rs.searchName AS searchName,
-  IF(rs.funder=1, TRUE, FALSE) AS funder,
-  rs.fundrefId AS fundrefId,
-  rs.homepage AS homepage,
-  CAST(rs.acronyms AS JSON) AS acronyms,
-  CAST(rs.aliases AS JSON) AS aliases,
-  CAST(rs.types AS JSON) AS types,
-  ro.logo_uid AS logoURI,
-  ro.logo_name AS logoName,
-  ro.contact_name AS contactName,
-  ro.contact_email AS contactEmail,
-  ro.ssoEntityId AS ssoEntityId,
-  ro.feedback_enabled AS feedbackEnabled,
-  ro.feedback_msg AS feedbackMessage,
-  JSON_ARRAY() AS feedbackEmails,
-  ro.managed,
-  TRUE AS active,
-  ro.api_target AS apiTarget,
-  @VAR('super_admin_id') AS createdById,
-  CURRENT_TIMESTAMP AS created,
-  @VAR('super_admin_id') AS modifiedById,
-  CURRENT_TIMESTAMP AS modified
-FROM migration.ror_staging rs
-INNER JOIN ror_orgs ro ON rs.uri = ro.ror_id -- Selects only ROR records we are using
-
-UNION ALL
+ror_affiliations AS (
+  SELECT
+    rs.uri AS uri,
+    rs.provenance AS provenance,
+    rs.name AS name,
+    rs.displayName AS displayName,
+    rs.searchName AS searchName,
+    IF(rs.funder=1, TRUE, FALSE) AS funder,
+    rs.fundrefId AS fundrefId,
+    rs.homepage AS homepage,
+    CAST(rs.acronyms AS JSON) AS acronyms,
+    CAST(rs.aliases AS JSON) AS aliases,
+    CAST(rs.types AS JSON) AS types,
+    ro.logo_uid AS logoURI,
+    ro.logo_name AS logoName,
+    ro.contact_name AS contactName,
+    ro.contact_email AS contactEmail,
+    ro.ssoEntityId AS ssoEntityId,
+    ro.feedback_enabled AS feedbackEnabled,
+    ro.feedback_msg AS feedbackMessage,
+    JSON_ARRAY() AS feedbackEmails,
+    ro.managed,
+    TRUE AS active,
+    ro.api_target AS apiTarget,
+    @VAR('super_admin_id') AS createdById,
+    CURRENT_TIMESTAMP AS created,
+    @VAR('super_admin_id') AS modifiedById,
+    CURRENT_TIMESTAMP AS modified
+  FROM migration.ror_staging rs
+  INNER JOIN ror_orgs ro ON rs.uri = ro.ror_id -- Selects only ROR records we are using
+),
 
 -- Non ROR based affiliations
+non_ror_affiliations AS (
+  SELECT
+    CONCAT('https://dmptool.org/affiliations/', nro.id) AS uri,
+    'DMPTOOL' AS provenance,
+    nro.name AS name,
+    nro.name AS displayName,
+    CONCAT_WS(' | ', nro.name, nro.abbreviation, nro.target_url) AS searchName,
+    nro.org_type IN (2, 3, 6, 7) AS funder,
+    NULL AS fundrefId,
+    nro.target_url AS homepage,
+    IF(nro.abbreviation IS NOT NULL, JSON_ARRAY(nro.abbreviation), JSON_ARRAY()) AS acronyms,
+    JSON_ARRAY() AS aliases,
+    CASE
+      WHEN nro.org_type = 2 THEN '["GOVERNMENT"]'
+      WHEN nro.org_type = 3 THEN '["EDUCATION", "GOVERNMENT"]'
+      WHEN (nro.org_type = 4 AND LOWER(nro.name) LIKE '%college%' OR LOWER(nro.name) LIKE '%university%' OR LOWER(nro.name) LIKE '%school%') THEN '["EDUCATION"]'
+      WHEN (nro.org_type = 4 AND LOWER(nro.name) NOT LIKE '%college%' AND LOWER(nro.name) NOT LIKE '%university%' AND LOWER(nro.name) NOT LIKE '%school%') THEN '["OTHER"]'
+      WHEN nro.org_type IN (5, 6) THEN '["NONPROFIT"]'
+      WHEN nro.org_type = 7 THEN '["EDUCATION", "GOVERNMENT", "OTHER"]'
+      ELSE '["EDUCATION"]'
+    END AS types,
+    nro.logo_uid AS logoURI,
+    nro.logo_name AS logoName,
+    nro.contact_name AS contactName,
+    nro.contact_email AS contactEmail,
+    nro.ssoEntityId,
+    nro.feedback_enabled AS feedbackEnabled,
+    nro.feedback_msg AS feedbackMessage,
+    JSON_ARRAY() AS feedbackEmails,
+    nro.managed,
+    TRUE AS active,
+    NULL AS apiTarget,
+    @VAR('super_admin_id') AS createdById,
+    CAST(nro.created_at AS TIMESTAMP) AS created,
+    @VAR('super_admin_id') AS modifiedById,
+    CAST(nro.updated_at AS TIMESTAMP) AS modified
+  FROM non_ror_orgs nro
+)
+
+-- Build final table
 SELECT
-  nro.id,
-  CONCAT('https://dmptool.org/affiliations/', nro.id) AS uri,
-  'DMPTOOL' AS provenance,
-  nro.name AS name,
-  nro.name AS displayName,
-  CONCAT_WS(' | ', nro.name, nro.abbreviation, nro.target_url) AS searchName,
-  nro.org_type IN (2, 3, 6, 7) AS funder,
-  NULL AS fundrefId,
-  nro.target_url AS homepage,
-  IF(nro.abbreviation IS NOT NULL, JSON_ARRAY(nro.abbreviation), JSON_ARRAY()) AS acronyms,
-  JSON_ARRAY() AS aliases,
-  CASE
-    WHEN nro.org_type = 2 THEN '["GOVERNMENT"]'
-    WHEN nro.org_type = 3 THEN '["EDUCATION", "GOVERNMENT"]'
-    WHEN (nro.org_type = 4 AND LOWER(nro.name) LIKE '%college%' OR LOWER(nro.name) LIKE '%university%' OR LOWER(nro.name) LIKE '%school%') THEN '["EDUCATION"]'
-    WHEN (nro.org_type = 4 AND LOWER(nro.name) NOT LIKE '%college%' AND LOWER(nro.name) NOT LIKE '%university%' AND LOWER(nro.name) NOT LIKE '%school%') THEN '["OTHER"]'
-    WHEN nro.org_type IN (5, 6) THEN '["NONPROFIT"]'
-    WHEN nro.org_type = 7 THEN '["EDUCATION", "GOVERNMENT", "OTHER"]'
-    ELSE '["EDUCATION"]'
-  END AS types,
-  nro.logo_uid AS logoURI,
-  nro.logo_name AS logoName,
-  nro.contact_name AS contactName,
-  nro.contact_email AS contactEmail,
-  nro.ssoEntityId,
-  nro.feedback_enabled AS feedbackEnabled,
-  nro.feedback_msg AS feedbackMessage,
-  JSON_ARRAY() AS feedbackEmails,
-  nro.managed,
-  TRUE AS active,
-  NULL AS apiTarget,
-  @VAR('super_admin_id') AS createdById,
-  CAST(nro.created_at AS TIMESTAMP) AS created,
-  @VAR('super_admin_id') AS modifiedById,
-  CAST(nro.updated_at AS TIMESTAMP) AS modified
-FROM non_ror_orgs nro
+  ROW_NUMBER() OVER () AS id,
+  a.*
+FROM (
+  SELECT * FROM ror_affiliations
+  UNION ALL
+  SELECT * FROM non_ror_affiliations
+) AS a;

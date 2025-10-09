@@ -12,13 +12,13 @@ MODEL (
   name migration.affiliation_links,
   kind FULL,
   columns (
-    id INT NOT NULL,
-    affiliationId INT NOT NULL,
+    id INT UNSIGNED NOT NULL,
+    affiliationId VARCHAR(255) NOT NULL,
     url VARCHAR(255),
     text VARCHAR(255),
-    createdById INT NOT NULL,
+    createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL,
-    modifiedById INT NOT NULL,
+    modifiedById INT UNSIGNED NOT NULL,
     modified TIMESTAMP NOT NULL
   ),
   audits (
@@ -29,15 +29,19 @@ MODEL (
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY o.id ASC, links.link_order ASC) AS id,
-  o.id AS affiliationId,
+  CASE
+    WHEN ro.org_id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+    ELSE ro.ror_id
+  END AS affiliationId,
   links.link AS url,
   links.text AS text,
   @VAR('super_admin_id') AS createdById,
   o.created_at AS created,
   @VAR('super_admin_id') AS modifiedById,
   o.updated_at AS modified
-FROM dmp.orgs o,
-JSON_TABLE(
+FROM dmp.orgs o
+LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
+JOIN JSON_TABLE(
   o.links,
   '$.org[*]'
   COLUMNS(
@@ -45,4 +49,4 @@ JSON_TABLE(
     link VARCHAR(255) PATH '$.link',
     text VARCHAR(255) PATH '$.text'
   )
-) AS links
+) AS links;

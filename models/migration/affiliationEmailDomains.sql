@@ -11,12 +11,12 @@ MODEL (
   name migration.affiliation_email_domains,
   kind FULL,
   columns (
-    id INT NOT NULL,
-    affiliationId INT NOT NULL,
+    id INT UNSIGNED NOT NULL,
+    affiliationId VARCHAR(255) NOT NULL,
     emailDomain VARCHAR(255),
-    createdById INT NOT NULL,
+    createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL,
-    modifiedById INT NOT NULL,
+    modifiedById INT UNSIGNED NOT NULL,
     modified TIMESTAMP NOT NULL
   ),
   audits (
@@ -27,7 +27,10 @@ MODEL (
 
 WITH email_domains AS (
   SELECT
-    o.id AS affiliationId,
+    CASE
+      WHEN ro.org_id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+      ELSE ro.ror_id
+    END AS affiliationId,
     TRIM(REGEXP_REPLACE(
       REGEXP_SUBSTR(o.target_url, '(?<=//)[^/]+'),
       '^www\\.',
@@ -38,12 +41,11 @@ WITH email_domains AS (
     @VAR('super_admin_id') AS modifiedById,
     o.updated_at AS modified
   FROM dmp.orgs o
+  LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
 )
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY ed.affiliationId ASC) AS id,
+  ROW_NUMBER() OVER () AS id,
   ed.*
 FROM email_domains ed
-WHERE ed.emailDomain IS NOT NULL AND ed.emailDomain != ""
-
-
+WHERE ed.emailDomain IS NOT NULL AND ed.emailDomain != "";

@@ -61,42 +61,48 @@ test_affiliationDepartments:
   outputs:
     query:
       rows:
-        - id: "https://dmptool.org/affiliations/100"
+        - id: 1
+          affiliationId: "https://dmptool.org/affiliations/100"
           name: "Department A"
           code: "DA"
           createdById: 1
           created: "2025-01-01 00:00:00"
           modifiedById: 1
           modified: "2025-02-01 00:00:00"
-        - id: "https://dmptool.org/affiliations/100"
+        - id: 2
+          affiliationId: "https://dmptool.org/affiliations/100"
           name: "Department B"
           code: "DB"
           createdById: 1
           created: "2025-01-01 00:00:00"
           modifiedById: 1
           modified: "2025-02-01 00:00:00"
-        - id: "https://dmptool.org/affiliations/100"
+        - id: 3
+          affiliationId: "https://dmptool.org/affiliations/100"
           name: "Department C"
           code: "DC"
           createdById: 1
           created: "2025-01-01 00:00:00"
           modifiedById: 1
           modified: "2025-02-01 00:00:00"
-        - id: "https://ror.org/abc123"
+        - id: 4
+          affiliationId: "https://ror.org/abc123"
           name: "ROR Department A"
           code: "RDA"
           createdById: 1
           created: "2025-01-01 00:00:00"
           modifiedById: 1
           modified: "2025-02-01 00:00:00"
-        - id: "https://ror.org/abc123"
+        - id: 5
+          affiliationId: "https://ror.org/abc123"
           name: "ROR Department B"
           code: "RDB"
           createdById: 1
           created: "2025-01-01 00:00:00"
           modifiedById: 1
           modified: "2025-02-01 00:00:00"
-        - id: "https://ror.org/abc123"
+        - id: 6
+          affiliationId: "https://ror.org/abc123"
           name: "ROR Department C"
           code: "RDC"
           createdById: 1

@@ -31,11 +31,16 @@ test_affiliationLinks:
           created_at: "2025-01-01 00:00:00"
           updated_at: "2025-02-01 00:00:00"
 
+    dmp.registry_orgs:
+      - id: 50
+        org_id: 5
+        ror_id: "https://ror.org/abc123"
+
   outputs:
     query:
       rows:
         - id: 1
-          affiliationId: 5
+          affiliationId: "https://ror.org/abc123"
           url: "https://example.edu/dmp/"
           text: "Text B"
           createdById: 1
@@ -43,7 +48,7 @@ test_affiliationLinks:
           modifiedById: 1
           modified: "2024-02-01 00:00:00"
         - id: 2
-          affiliationId: 6
+          affiliationId: "https://dmptool.org/affiliations/6"
           url: "https://example.ac.nz/dmp/"
           text: "Text C"
           createdById: 1
@@ -51,7 +56,7 @@ test_affiliationLinks:
           modifiedById: 1
           modified: "2024-02-01 00:00:00"
         - id: 3
-          affiliationId: 6
+          affiliationId: "https://dmptool.org/affiliations/6"
           url: "https://example.edu.au/dmp/"
           text: "Text D"
           createdById: 1
