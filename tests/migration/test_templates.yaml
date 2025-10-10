@@ -62,7 +62,7 @@ test_templates:
 
     migration.templates_pt_br:
       rows:
-        - id: 12345
+        - family_id: 12345
 
     migration.users:
       rows:
