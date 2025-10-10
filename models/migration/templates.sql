@@ -36,20 +36,31 @@ MODEL (
     modifiedById INT
   ),
   audits (
-    unique_combination_of_columns(columns := (ownerId, name)),
+    unique_combination_of_columns(columns := (family_id)),
     not_null(columns := (family_id, name, ownerId, created, createdById, modified, modifiedById))
   ),
   enabled true
 );
+
+WITH org_creator AS (
+  SELECT
+    u.org_id,
+    COALESCE(mu.id, @VAR('super_admin_id')) AS user_id
+  FROM dmp.users AS u
+    INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
+      LEFT JOIN migration.users AS mu ON u.email = mu.email
+  WHERE u.org_id IS NOT NULL
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
+)
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY t.created_at ASC) AS id,
   t.family_id,
   t.title AS name,
   t.description,
-  CASE WHEN t.is_default = 1 THEN true ELSE false END AS bestPractice,
+  (t.is_default = 1) AS bestPractice,
   CASE WHEN t.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS latestPublishVisibility,
-  CASE WHEN t.published = 0 THEN true ELSE false END AS isDirty,
+  (t.published = 0) AS isDirty,
   CASE
     WHEN t.published = 1 THEN CONCAT('v', t.version)
     WHEN t.published = 0 AND t.version > 0 THEN CONCAT('v', t.version - 1)
@@ -62,26 +73,19 @@ SELECT
     ELSE ro.ror_id
   END AS ownerId,
   CASE
-    WHEN t.locale IN ('pt', 'pt-BR') OR t.family_id IN @VAR('pt_br_templates') THEN 'pt-BR'
+    WHEN t.locale IN ('pt', 'pt-BR') OR t.family_id IN (SELECT pt.family_id FROM migration.templates_pt_br AS pt) THEN 'pt-BR'
     ELSE 'en-US'
   END AS languageId,
-  (SELECT mu.id
-   FROM dmp.users AS u
-     INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
-     LEFT JOIN migration.users AS mu ON u.email = mu.email
-   WHERE u.org_id = o.id ORDER BY u.created_at DESC LIMIT 1
-  ) AS createdById,
+  COALESCE(oc.user_id, @VAR('super_admin_id')) AS createdById,
   t.created_at AS created,
-  (SELECT mu.id
-   FROM dmp.users AS u
-     INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
-     LEFT JOIN migration.users AS mu ON u.email = mu.email
-   WHERE u.org_id = o.id ORDER BY u.created_at DESC LIMIT 1
-  ) AS modifiedById,
+  COALESCE(oc.user_id, @VAR('super_admin_id')) AS modifiedById,
   t.updated_at AS modified
 FROM dmp.templates AS t
-    INNER JOIN dmp.orgs AS o ON t.org_id = o.id
+  INNER JOIN dmp.orgs AS o ON t.org_id = o.id
     LEFT OUTER JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
+    LEFT JOIN org_creator AS oc ON oc.org_id = o.id
 WHERE t.customization_of IS NULL
   AND t.id = (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)
+  AND t.family_id IS NOT NULL
+  AND t.title IS NOT NULL
 ORDER BY t.created_at ASC;
