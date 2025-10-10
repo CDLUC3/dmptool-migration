@@ -68,6 +68,22 @@ WITH org_creator AS (
   QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
 )
 
+WITH never_published AS (
+  SELECT tmplt.family_id, COUNT(t.id) nbr_versions
+  FROM dmp.templates AS tmplt
+    INNER JOIN dmp.templates AS t ON tmplt.family_id = t.family_id
+  WHERE tmplt.version = 0 AND tmplt.published = 0
+  GROUP BY tmplt.id, tmplt.family_id
+  HAVING nbr_versions = 1
+)
+
+WITH unpublished_currents (
+  SELECT t.id
+  FROM dmp.templates AS t
+  WHERE t.published = 0
+    AND t.id IN (SELECT MAX(t2.id) FROM dmp.templates AS t2 GROUP BY t2.family_id)
+)
+
 SELECT
   ROW_NUMBER() OVER (ORDER BY vt.created_at ASC) AS id,
   vt.family_id,
@@ -100,4 +116,6 @@ FROM dmp.templates AS vt
     LEFT OUTER JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
   INNER JOIN migration.templates AS t ON vt.family_id = t.family_id
 WHERE vt.customization_of IS NULL
+  AND vt.family_id NOT IN (SELECT DISTINCT family_id FROM never_published)
+  AND vt.id NOT IN (SELECT id FROM unpublished_currents)
 ORDER BY vt.created_at ASC;

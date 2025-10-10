@@ -38,6 +38,10 @@ MYSQL_PWD=password
 - Clean up users attached to the "Non Partner Institution" org (id=1). See the [Users doc](docs/Users.md) for more details.
 - In `affiliationDepartments`, `affiliationEmailDomains` and `affiliationLinks` change `affiliationId` from `INT` to `VARCHAR(255)`.
 - Update all `INT` id fields to `INT UNSIGNED`.
+- We need to add the following values to the RelatedWorks WorkType enum:
+  - PRE_REGISTRATION (e.g. https://doi.org/10.17605/OSF.IO/4NF7Q) 
+  - PROTOCOL (e.g. https://dx.doi.org/10.17504/protocols.io.x54v9jx7zg3e/v1) 
+  - TRADITIONAL_KNOWLEDGE (e.g. https://localcontextshub.org/projects/e884d181-a5b8-40ec-9311-81870a3b372a/) 
 
 ```
 - Clean up `registry_orgs` table which has a few duplicate `org_id` entries. Run the following query, the orgs in the `orgs` table likely need to be merged and the registry_org table updated to map to the merged org only:

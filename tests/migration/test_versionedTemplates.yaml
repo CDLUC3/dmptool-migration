@@ -1,5 +1,8 @@
-test_versioned_templates:
+test_versionedTemplates:
   model: migration.versioned_templates
+
+  vars:
+    super_admin_id: 0 # Define the variable used in the model for COALESCE
 
   inputs:
     dmp.orgs:
@@ -18,34 +21,43 @@ test_versioned_templates:
 
     dmp.users:
       rows:
-        - id: 1
-          email: "admin@example.com"
-          org_id: 1
-          created_at: "2025-09-15 06:14:14"
-
+        # Latest admin for Org 1 (ID 9876 in migration.users)
         - id: 2
           email: "admin2@example.com"
           org_id: 1
           created_at: "2025-09-20 06:14:14"
 
-        - id: 3
-          email: "tester@example.com"
+        # Older admin for Org 1 (ID 12345 in migration.users)
+        - id: 1
+          email: "admin@example.com"
           org_id: 1
           created_at: "2025-09-15 06:14:14"
 
+        # Org 2 Admin (ID 54321 in migration.users)
         - id: 4
           email: "super@example.com"
           org_id: 2
           created_at: "2025-09-15 06:14:14"
 
+        # Non-admin user for Org 1 (not used for org_creator)
+        - id: 3
+          email: "tester@example.com"
+          org_id: 1
+          created_at: "2025-09-15 06:14:14"
+
+
     dmp.users_perms:
       rows:
-        - id: 1
-          user_id: 1
+        - id: 2
+          user_id: 2 # admin2@example.com
           perm_id: 6
 
-        - id: 2
-          user_id: 2
+        - id: 1
+          user_id: 1 # admin@example.com
+          perm_id: 6
+
+        - id: 5
+          user_id: 4 # super@example.com
           perm_id: 6
 
         - id: 3
@@ -56,13 +68,9 @@ test_versioned_templates:
           user_id: 4
           perm_id: 1
 
-        - id: 5
-          user_id: 4
-          perm_id: 6
-
     migration.templates_pt_br:
       rows:
-        - family_id: 12345
+        - family_id: 12345 # Family ID that forces pt-BR language
 
     migration.users:
       rows:
@@ -80,156 +88,41 @@ test_versioned_templates:
 
     migration.templates:
       columns:
+        id: BIGINT UNSIGNED # Match model definition
+        family_id: INT
         customization_of: INT
       rows:
         - id: 1
-          family_id: 12345
-
+          family_id: 12345 # Matches Template ID 1
         - id: 2
-          family_id: 98765
-
+          family_id: 98765 # Matches Template ID 2
         - id: 3
-          family_id: 54321
-
+          family_id: 54321 # Matches Template ID 3
         - id: 4
-          family_id: 67890
-
+          family_id: 67890 # Matches Template ID 4 (Best Practice)
         - id: 5
           family_id: 90909
 
     dmp.templates:
       columns:
+        id: BIGINT # Added missing ID column
+        title: VARCHAR(255)
+        description: MEDIUMTEXT
+        published: TINYINT
+        org_id: INT
+        locale: VARCHAR(255)
+        is_default: TINYINT
+        created_at: TIMESTAMP
+        updated_at: TIMESTAMP
+        version: INT
+        visibility: TINYINT
         customization_of: INT
+        family_id: INT
+        archived: TINYINT
+        links: MEDIUMTEXT
       rows:
+        # 1. Best Practice (v0, Org 2) - Earliest. INCLUDED. Final ID: 1
         - id: 1
-          title: "Published Organizational Template"
-          description: "<p class=\"Normal\">Test published organizational template</p>"
-          published: 1
-          org_id: 1
-          locale: "en-US"
-          is_default: 0
-          created_at: "2025-09-01 01:14:14"
-          updated_at: "2025-09-15 11:33:17"
-          version: 1
-          visibility: 0
-          customization_of: null
-          family_id: 12345
-          archived: 0
-          links: "{\"funder\":[],\"sample_plan\":[]}"
-
-        - id: 2
-          title: "Published Organizational Template"
-          description: "<p class=\"Normal\">Test published organizational template</p>"
-          published: 0
-          org_id: 1
-          locale: "en-US"
-          is_default: 0
-          created_at: "2025-08-01 01:14:14"
-          updated_at: "2025-09-15 11:33:17"
-          version: 0
-          visibility: 0
-          customization_of: null
-          family_id: 12345
-          archived: 0
-          links: "{\"funder\":[],\"sample_plan\":[]}"
-
-        - id: 3
-          title: "Published Public Template"
-          description: "<p class=\"Normal\">Test published template</p>"
-          published: 1
-          org_id: 1
-          locale: "pt-BR"
-          is_default: 0
-          created_at: "2025-09-01 02:14:14"
-          updated_at: "2025-09-15 11:33:17"
-          version: 2
-          visibility: 1
-          customization_of: null
-          family_id: 98765
-          archived: 0
-          links: "{\"funder\":[],\"sample_plan\":[]}"
-
-        - id: 4
-          title: "Published Public Template"
-          description: "<p class=\"Normal\">Test published template</p>"
-          published: 0
-          org_id: 1
-          locale: "pt-BR"
-          is_default: 0
-          created_at: "2025-08-02 02:14:14"
-          updated_at: "2025-09-15 11:33:17"
-          version: 1
-          visibility: 1
-          customization_of: null
-          family_id: 98765
-          archived: 0
-          links: "{\"funder\":[],\"sample_plan\":[]}"
-
-        - id: 5
-          title: "Published Public Template"
-          description: "<p class=\"Normal\">Test published template</p>"
-          published: 0
-          org_id: 1
-          locale: "pt-BR"
-          is_default: 0
-          created_at: "2025-07-02 02:14:14"
-          updated_at: "2025-09-15 11:33:17"
-          version: 0
-          visibility: 1
-          customization_of: null
-          family_id: 98765
-          archived: 0
-          links: "{\"funder\":[],\"sample_plan\":[]}"
-
-        - id: 6
-          title: "Unpublished Template"
-          description: "<p class=\"Normal\">Test unpublished template</p>"
-          published: 0
-          org_id: 1
-          locale: "en-US"
-          is_default: 0
-          created_at: "2025-09-03 03:14:14"
-          updated_at: "2025-09-15 11:33:17"
-          version: 0
-          visibility: 1
-          customization_of: null
-          family_id: 54321
-          archived: 0
-          links: "{\"funder\":[],\"sample_plan\":[]}"
-
-        - id: 7
-          title: "Best Practice Template"
-          description: "<p class=\"Normal\">Test best practice template</p>"
-          published: 0
-          org_id: 2
-          locale: "en-US"
-          is_default: 1
-          created_at: "2025-01-01 04:14:14"
-          updated_at: "2025-01-01 11:33:17"
-          version: 2
-          visibility: 1
-          customization_of: null
-          family_id: 67890
-          archived: 0
-          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
-
-        - id: 8
-          title: "Best Practice Template"
-          description: "<p class=\"Normal\">Test best practice template</p>"
-          published: 1
-          org_id: 2
-          locale: "en-US"
-          is_default: 1
-          created_at: "2024-01-01 04:14:14"
-          updated_at: "2025-01-01 11:33:17"
-          version: 1
-          visibility: 1
-          customization_of: null
-          family_id: 67890
-          archived: 0
-          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
-
-        - id: 9
           title: "Best Practice Template"
           description: "<p class=\"Normal\">Test best practice template</p>"
           published: 0
@@ -245,6 +138,143 @@ test_versioned_templates:
           archived: 0
           links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
 
+        # 2. Best Practice (v1, Org 2) - Active. INCLUDED. Final ID: 2
+        - id: 2
+          title: "Best Practice Template"
+          description: "<p class=\"Normal\">Test best practice template</p>"
+          published: 1
+          org_id: 2
+          locale: "en-US"
+          is_default: 1
+          created_at: "2024-01-01 04:14:14"
+          updated_at: "2025-01-01 11:33:17"
+          version: 1
+          visibility: 1
+          customization_of: null
+          family_id: 67890
+          archived: 0
+          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
+
+        # 3. Best Practice (v2, Org 2) - Current Draft. EXCLUDED by `unpublished_currents`.
+        - id: 3
+          title: "Best Practice Template"
+          description: "<p class=\"Normal\">Test best practice template</p>"
+          published: 0
+          org_id: 2
+          locale: "en-US"
+          is_default: 1
+          created_at: "2025-01-01 04:14:14"
+          updated_at: "2025-01-01 11:33:17"
+          version: 2
+          visibility: 1
+          customization_of: null
+          family_id: 67890
+          archived: 0
+          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
+
+        # 4. Public Template (v0, Org 1) - locale pt-BR. INCLUDED. Final ID: 3
+        - id: 4
+          title: "Published Public Template"
+          description: "<p class=\"Normal\">Test published template</p>"
+          published: 0
+          org_id: 1
+          locale: "pt-BR"
+          is_default: 0
+          created_at: "2025-07-02 02:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 0
+          visibility: 1
+          customization_of: null
+          family_id: 98765
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        # 5. Org Template (v0, Org 1) - family 12345 forces pt-BR. INCLUDED. Final ID: 4
+        - id: 5
+          title: "Published Organizational Template"
+          description: "<p class=\"Normal\">Test published organizational template</p>"
+          published: 0
+          org_id: 1
+          locale: "en-US"
+          is_default: 0
+          created_at: "2025-08-01 01:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 0
+          visibility: 0
+          customization_of: null
+          family_id: 12345
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        # 6. Public Template (v1, Org 1) - locale pt-BR. INCLUDED. Final ID: 5
+        - id: 6
+          title: "Published Public Template"
+          description: "<p class=\"Normal\">Test published template</p>"
+          published: 0
+          org_id: 1
+          locale: "pt-BR"
+          is_default: 0
+          created_at: "2025-08-02 02:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 1
+          visibility: 1
+          customization_of: null
+          family_id: 98765
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        # 7. Org Template (v1, Org 1) - Active. INCLUDED. Final ID: 6
+        - id: 7
+          title: "Published Organizational Template"
+          description: "<p class=\"Normal\">Test published organizational template</p>"
+          published: 1
+          org_id: 1
+          locale: "en-US"
+          is_default: 0
+          created_at: "2025-09-01 01:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 1
+          visibility: 0
+          customization_of: null
+          family_id: 12345
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        # 8. Public Template (v2, Org 1) - Active. INCLUDED. Final ID: 7
+        - id: 8
+          title: "Published Public Template"
+          description: "<p class=\"Normal\">Test published template</p>"
+          published: 1
+          org_id: 1
+          locale: "pt-BR"
+          is_default: 0
+          created_at: "2025-09-01 02:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 2
+          visibility: 1
+          customization_of: null
+          family_id: 98765
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        # 9. Unpublished Template (v0, single version) - EXCLUDED by `never_published`.
+        - id: 9
+          title: "Unpublished Template"
+          description: "<p class=\"Normal\">Test unpublished template</p>"
+          published: 0
+          org_id: 1
+          locale: "en-US"
+          is_default: 0
+          created_at: "2025-09-03 03:14:14"
+          updated_at: "2025-09-15 11:33:17"
+          version: 0
+          visibility: 1
+          customization_of: null
+          family_id: 54321
+          archived: 0
+          links: "{\"funder\":[],\"sample_plan\":[]}"
+
+        # 10. Customization - EXCLUDED by `vt.customization_of IS NULL`.
         - id: 10
           title: "Customization of a Template"
           description: "<p class=\"Normal\">Template customization</p>"
@@ -263,17 +293,20 @@ test_versioned_templates:
 
   outputs:
     query:
+      # Output rows are sorted by created_at of dmp.templates
       rows:
+        # Source ID 1: family_id 67890 (Org 2)
         - id: 1
           family_id: 67890
-          template_id: 4
+          template_id: 4 # from migration.templates
           active: 0
           version: "v0"
           versionType: "PUBLISHED"
-          versionedById: 54321
+          versionedById: 54321 # Org 2 latest admin
+          comment: null
           name: "Best Practice Template"
           description: "<p class=\"Normal\">Test best practice template</p>"
-          ownerId: "https://ror.org/xxxxxxxx"
+          ownerId: "https://ror.org/xxxxxxxx" # Org 2 ROR ID
           visibility: "PUBLIC"
           bestPractice: true
           languageId: 'en-US'
@@ -282,13 +315,15 @@ test_versioned_templates:
           modified: "2025-01-01 11:33:17"
           modifiedById: 54321
 
+        # Source ID 2: family_id 67890 (Org 2)
         - id: 2
           family_id: 67890
           template_id: 4
-          active: 0
+          active: 1
           version: "v1"
           versionType: "PUBLISHED"
           versionedById: 54321
+          comment: null
           name: "Best Practice Template"
           description: "<p class=\"Normal\">Test best practice template</p>"
           ownerId: "https://ror.org/xxxxxxxx"
@@ -300,67 +335,55 @@ test_versioned_templates:
           modified: "2025-01-01 11:33:17"
           modifiedById: 54321
 
+        # Source ID 4: family_id 98765 (Org 1)
         - id: 3
-          family_id: 67890
-          template_id: 4
-          active: 1
-          version: "v2"
-          versionType: "PUBLISHED"
-          versionedById: 54321
-          name: "Best Practice Template"
-          description: "<p class=\"Normal\">Test best practice template</p>"
-          ownerId: "https://ror.org/xxxxxxxx"
-          visibility: "PUBLIC"
-          bestPractice: true
-          languageId: 'en-US'
-          created: "2025-01-01 04:14:14"
-          createdById: 54321
-          modified: "2025-01-01 11:33:17"
-          modifiedById: 54321
-
-        - id: 4
           family_id: 98765
           template_id: 2
           active: 0
           version: "v0"
           versionType: "PUBLISHED"
-          versionedById: 9876
+          versionedById: 9876 # Org 1 latest admin
+          comment: null
           name: "Published Public Template"
           description: "<p class=\"Normal\">Test published template</p>"
-          ownerId: "https://dmptool.org/affiliations/1"
+          ownerId: "https://dmptool.org/affiliations/1" # Org 1 link
           visibility: "PUBLIC"
           bestPractice: false
-          languageId: 'pt-BR'
+          languageId: 'pt-BR' # Locale pt-BR
           created: "2025-07-02 02:14:14"
           createdById: 9876
           modified: "2025-09-15 11:33:17"
           modifiedById: 9876
 
-        - id: 5
+        # Source ID 5: family_id 12345 (Org 1)
+        - id: 4
           family_id: 12345
           template_id: 1
           active: 0
           version: "v0"
           versionType: "PUBLISHED"
           versionedById: 9876
+          comment: null
           name: "Published Organizational Template"
           description: "<p class=\"Normal\">Test published organizational template</p>"
           ownerId: "https://dmptool.org/affiliations/1"
           visibility: "ORGANIZATIONAL"
           bestPractice: false
-          languageId: 'pt-BR'
+          languageId: 'pt-BR' # family_id 12345 forces pt-BR
           created: "2025-08-01 01:14:14"
           createdById: 9876
           modified: "2025-09-15 11:33:17"
           modifiedById: 9876
 
-        - id: 6
+        # Source ID 6: family_id 98765 (Org 1)
+        - id: 5
           family_id: 98765
           template_id: 2
           active: 0
           version: "v1"
           versionType: "PUBLISHED"
           versionedById: 9876
+          comment: null
           name: "Published Public Template"
           description: "<p class=\"Normal\">Test published template</p>"
           ownerId: "https://dmptool.org/affiliations/1"
@@ -372,13 +395,15 @@ test_versioned_templates:
           modified: "2025-09-15 11:33:17"
           modifiedById: 9876
 
-        - id: 7
+        # Source ID 7: family_id 12345 (Org 1)
+        - id: 6
           family_id: 12345
           template_id: 1
           active: 1
           version: "v1"
           versionType: "PUBLISHED"
           versionedById: 9876
+          comment: null
           name: "Published Organizational Template"
           description: "<p class=\"Normal\">Test published organizational template</p>"
           ownerId: "https://dmptool.org/affiliations/1"
@@ -390,20 +415,33 @@ test_versioned_templates:
           modified: "2025-09-15 11:33:17"
           modifiedById: 9876
 
-        - id: 8
+        # Source ID 8: family_id 98765 (Org 1)
+        - id: 7
           family_id: 98765
           template_id: 2
           active: 1
           version: "v2"
           versionType: "PUBLISHED"
           versionedById: 9876
+          comment: null
           name: "Published Public Template"
           description: "<p class=\"Normal\">Test published template</p>"
           ownerId: "https://dmptool.org/affiliations/1"
           visibility: "PUBLIC"
           bestPractice: false
           languageId: 'pt-BR'
-          created: "2025-09-02 02:14:14"
+          created: "2025-09-01 02:14:14"
           createdById: 9876
           modified: "2025-09-15 11:33:17"
           modifiedById: 9876
+
+    audits:
+      dmptool_only_one_active_version_per_template:
+        rows: [] # Expecting no rows, as the model should ensure only one active version per template.
+
+      # Default Audit Checks:
+      unique_combination_of_columns:
+        rows: []
+
+      not_null:
+        rows: []
