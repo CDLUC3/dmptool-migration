@@ -1,4 +1,4 @@
-test_affiliationDepartments:
+test_affiliation_departments:
   model: migration.affiliation_departments
   vars:
     execution_time: "2025-10-01 00:00:00+00:00"

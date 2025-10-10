@@ -1,4 +1,4 @@
-test_affiliationLinks:
+test_affiliation_links:
   model: migration.affiliation_links
 
   inputs:
