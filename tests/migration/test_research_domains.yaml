@@ -1,4 +1,4 @@
-test_researchDomains:
+test_research_domains:
   model: migration.research_domains
   vars:
     execution_time: "2025-10-07 00:00:00+00:00"

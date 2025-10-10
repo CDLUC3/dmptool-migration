@@ -26,7 +26,7 @@
 --  `modifiedById` int DEFAULT NULL,
 
 MODEL (
-  name migration.users,
+  name intermediate.users,
   kind FULL,
   audits (
     assert_row_count(dmp_table:='users', blocking := false),
