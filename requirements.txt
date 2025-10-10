@@ -1,1 +1,1 @@
-sqlmesh[duckdb, mysql]==0.224.0
+sqlmesh[duckdb, mysql]>=0.224.0,<1

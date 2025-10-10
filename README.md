@@ -36,6 +36,9 @@ MYSQL_PWD=password
 - Add additional indices to tables to speed up migration queries:
   -  answers_question_options -> (question_option_id)
 - Clean up users attached to the "Non Partner Institution" org (id=1). See the [Users doc](docs/Users.md) for more details.
+- In `affiliationDepartments`, `affiliationEmailDomains` and `affiliationLinks` change `affiliationId` from `INT` to `VARCHAR(255)`.
+- Update all `INT` id fields to `INT UNSIGNED`.
+
 ```
 - Clean up `registry_orgs` table which has a few duplicate `org_id` entries. Run the following query, the orgs in the `orgs` table likely need to be merged and the registry_org table updated to map to the merged org only:
 ```

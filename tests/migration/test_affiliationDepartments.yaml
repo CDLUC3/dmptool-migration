@@ -1,0 +1,111 @@
+test_affiliationDepartments:
+  model: migration.affiliation_departments
+  vars:
+    execution_time: "2025-10-01 00:00:00+00:00"
+
+  inputs:
+    dmp.orgs:
+      rows:
+        - id: 100
+          name: "Non ROR Institution"
+        - id: 101
+          name: "ROR Institution"
+
+    dmp.registry_orgs:
+      columns:
+        ror_id: VARCHAR(255)
+      rows:
+        - id: 1000
+          org_id: 101
+          ror_id: "https://ror.org/abc123"
+
+    dmp.departments:
+      rows:
+        - id: 1
+          name: "Department A"
+          code: "DA"
+          org_id: 100
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-02-01 00:00:00"
+        - id: 2
+          name: "Department B"
+          code: "DB"
+          org_id: 100
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-02-01 00:00:00"
+        - id: 3
+          name: "Department C"
+          code: "DC"
+          org_id: 100
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-02-01 00:00:00"
+        - id: 4
+          name: "ROR Department A"
+          code: "RDA"
+          org_id: 101
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-02-01 00:00:00"
+        - id: 5
+          name: "ROR Department B"
+          code: "RDB"
+          org_id: 101
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-02-01 00:00:00"
+        - id: 6
+          name: "ROR Department C"
+          code: "RDC"
+          org_id: 101
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-02-01 00:00:00"
+
+  outputs:
+    query:
+      rows:
+        - id: 1
+          affiliationId: "https://dmptool.org/affiliations/100"
+          name: "Department A"
+          code: "DA"
+          createdById: 1
+          created: "2025-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-02-01 00:00:00"
+        - id: 2
+          affiliationId: "https://dmptool.org/affiliations/100"
+          name: "Department B"
+          code: "DB"
+          createdById: 1
+          created: "2025-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-02-01 00:00:00"
+        - id: 3
+          affiliationId: "https://dmptool.org/affiliations/100"
+          name: "Department C"
+          code: "DC"
+          createdById: 1
+          created: "2025-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-02-01 00:00:00"
+        - id: 4
+          affiliationId: "https://ror.org/abc123"
+          name: "ROR Department A"
+          code: "RDA"
+          createdById: 1
+          created: "2025-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-02-01 00:00:00"
+        - id: 5
+          affiliationId: "https://ror.org/abc123"
+          name: "ROR Department B"
+          code: "RDB"
+          createdById: 1
+          created: "2025-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-02-01 00:00:00"
+        - id: 6
+          affiliationId: "https://ror.org/abc123"
+          name: "ROR Department C"
+          code: "RDC"
+          createdById: 1
+          created: "2025-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-02-01 00:00:00"
