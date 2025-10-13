@@ -1,0 +1,65 @@
+test_name: test_versioned_template_links
+model: migration.versioned_template_links
+
+# -- Input data simulating source tables and variables
+inputs:
+  dmp.templates:
+    columns:
+      - id
+      - family_id
+      - version
+      - links
+      - created_at
+      - updated_at
+    rows:
+      - [1, 100, '1', '{"funder":[{"link":"https://dot.gov/plan1","text":"DOT Plan"}],"sample_plan":[{"link":"https://ntl.bts.gov/sample1","text":"Sample Plan"}]}', '2024-01-01 10:00:00', '2024-01-02 11:00:00']
+      - [2, 100, '2', '{"funder":[{"link":"https://dot.gov/plan2","text":"DOT Plan 2"}],"sample_plan":[]}', '2024-01-05 10:00:00', '2024-01-06 11:00:00']
+      - [3, 101, '1', '{"sample_plan":[{"link":"https://sample.only","text":"Only Sample"}]}', '2024-01-10 09:00:00', '2024-01-10 09:30:00']
+
+  migration.versioned_templates:
+    columns:
+      - id
+      - family_id
+      - version
+    rows:
+      - [10, 100, 'v1']
+      - [11, 100, 'v2']
+      - [12, 101, 'v1']
+
+  __vars__:
+    super_admin_id: 999
+
+# -- Expected output data
+outputs:
+  query:
+    columns:
+      - id
+      - versionedTemplateId
+      - type
+      - url
+      - text
+      - createdById
+      - created
+      - modifiedById
+      - modified
+    rows:
+      # Record from template 1 (FUNDER link)
+      - [1, 10, 'FUNDER', 'https://dot.gov/plan1', 'DOT Plan', 999, '2024-01-01 10:00:00', 999, '2024-01-02 11:00:00']
+      # Record from template 1 (SAMPLE link)
+      - [2, 10, 'SAMPLE', 'https://ntl.bts.gov/sample1', 'Sample Plan', 999, '2024-01-01 10:00:00', 999, '2024-01-02 11:00:00']
+      # Record from template 2 (FUNDER only)
+      - [3, 11, 'FUNDER', 'https://dot.gov/plan2', 'DOT Plan 2', 999, '2024-01-05 10:00:00', 999, '2024-01-06 11:00:00']
+      # Record from template 3 (SAMPLE only)
+      - [4, 12, 'SAMPLE', 'https://sample.only', 'Only Sample', 999, '2024-01-10 09:00:00', 999, '2024-01-10 09:30:00']
+
+# -- Optional: test expectations for audits
+audits:
+  - name: unique_combination_of_columns
+    arguments:
+      columns: [versionedTemplateId, url]
+    expect_pass: true
+
+  - name: not_null
+    arguments:
+      columns: [versionedTemplateId, type, url, text, created, createdById, modified, modifiedById]
+    expect_pass: true

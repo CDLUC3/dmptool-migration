@@ -36,7 +36,7 @@ MODEL (
     modifiedById INT
   ),
   audits (
-    unique_combination_of_columns(columns := (family_id)),
+    unique_values(columns := (family_id), blocking := false)
     not_null(columns := (family_id, name, ownerId, created, createdById, modified, modifiedById))
   ),
   enabled true
