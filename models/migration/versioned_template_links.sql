@@ -14,7 +14,7 @@ MODEL (
   columns (
     id INT UNSIGNED NOT NULL,
     versionedTemplateId INT NOT NULL,
-    type VARCHAR(10) NOT NULL DEFAULT 'FUNDER',
+    linkType VARCHAR(10) NOT NULL DEFAULT 'FUNDER',
     url VARCHAR(255),
     text VARCHAR(255),
     createdById INT UNSIGNED NOT NULL,
@@ -23,22 +23,22 @@ MODEL (
     modified TIMESTAMP NOT NULL
   ),
   audits (
-    unique_combination_of_columns(columns := (versionedTemplateId, url)),
-    not_null(columns := (versionedTemplateId, type, url, text, created, createdById, modified, modifiedById))
+    -- unique_combination_of_columns(columns := (versionedTemplateId, url, text)),
+    not_null(columns := (versionedTemplateId, linkType, url, text, created, createdById, modified, modifiedById))
   ),
   enabled true
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY o.id ASC, links.link_order ASC) AS id,
-  tmplt.id AS templateId,
-  'FUNDER' AS type,
+  ROW_NUMBER() OVER (ORDER BY t.id ASC, links.link_order ASC) AS id,
+  tmplt.id AS versionedTemplateId,
+  'FUNDER' AS linkType,
   links.link AS url,
-  links.text AS text,
+  CASE WHEN links.text IS NULL OR links.text = '' THEN links.link ELSE links.text END AS text,
   @VAR('super_admin_id') AS createdById,
-  o.created_at AS created,
+  t.created_at AS created,
   @VAR('super_admin_id') AS modifiedById,
-  o.updated_at AS modified
+  t.updated_at AS modified
 FROM dmp.templates t
   LEFT JOIN migration.versioned_templates tmplt
     ON t.family_id = tmplt.family_id AND CONCAT('v', t.version) = tmplt.version
@@ -51,19 +51,20 @@ FROM dmp.templates t
       text VARCHAR(255) PATH '$.text'
     )
   ) AS links
+WHERE t.customization_of IS NULL AND tmplt.id IS NOT NULL
 
 UNION ALL
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY o.id ASC, links.link_order ASC) AS id,
-  tmplt.id AS templateId,
-  'SAMPLE' AS type,
+  ROW_NUMBER() OVER (ORDER BY t.id ASC, links.link_order ASC) AS id,
+  tmplt.id AS versionedTemplateId,
+  'SAMPLE' AS linkType,
   links.link AS url,
-  links.text AS text,
+  CASE WHEN links.text IS NULL OR links.text = '' THEN links.link ELSE links.text END AS text,
   @VAR('super_admin_id') AS createdById,
-  o.created_at AS created,
+  t.created_at AS created,
   @VAR('super_admin_id') AS modifiedById,
-  o.updated_at AS modified
+  t.updated_at AS modified
 FROM dmp.templates t
   LEFT JOIN migration.versioned_templates tmplt
     ON t.family_id = tmplt.family_id AND CONCAT('v', t.version) = tmplt.version
@@ -75,4 +76,5 @@ FROM dmp.templates t
       link VARCHAR(255) PATH '$.link',
       text VARCHAR(255) PATH '$.text'
     )
-  ) AS links;
+  ) AS links
+WHERE t.customization_of IS NULL AND tmplt.id IS NOT NULL;
