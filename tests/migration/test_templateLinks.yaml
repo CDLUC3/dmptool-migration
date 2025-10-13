@@ -1,0 +1,97 @@
+test_template_links:
+  model: migration.template_links
+
+  vars:
+    super_admin_id: 999
+
+  # -- Input data simulating source tables and variables
+  inputs:
+    dmp.templates:
+      rows:
+        - id: 1
+          family_id: 100
+          version: 1
+          links: '{"funder":[{"link":"https://dot.gov/plan1","text":"DOT Plan"}],"sample_plan":[{"link":"https://ntl.bts.gov/sample1","text":"Sample Plan"}]}'
+          created_at: '2024-01-01 10:00:00'
+          updated_at: '2024-01-02 11:00:00'
+        - id: 2
+          family_id: 100
+          version: 2
+          links: '{"funder":[{"link":"https://dot.gov/plan2","text":"DOT Plan 2"}],"sample_plan":[]}'
+          created_at: '2024-01-05 10:00:00'
+          updated_at: '2024-01-06 11:00:00'
+        - id: 3
+          family_id: 101
+          version: 1
+          links: '{"sample_plan":[{"link":"https://sample.only","text":"Only Sample"}]}'
+          created_at: '2024-01-10 09:00:00'
+          updated_at: '2024-01-10 09:30:00'
+
+    migration.templates:
+      rows:
+        - id: 10
+          family_id: 100
+        - id: 11
+          family_id: 100
+        - id: 12
+          family_id: 101
+
+  # -- Expected output data
+  outputs:
+    query:
+      rows:
+        # Record from template 1 (FUNDER link)
+        - id: 1
+          templateId: 10
+          linkType: 'FUNDER'
+          url: 'https://dot.gov/plan1'
+          text: 'DOT Plan'
+          createdById: 999
+          created: '2024-01-01 10:00:00'
+          modifiedById: 999
+          modified: '2024-01-02 11:00:00'
+        # Record from template 1 (SAMPLE link)
+        - id: 2
+          templateId: 10
+          linkType: 'SAMPLE'
+          url: 'https://ntl.bts.gov/sample1'
+          text: 'Sample Plan'
+          createdById: 999
+          created: '2024-01-01 10:00:00'
+          modifiedById: 999
+          modified: '2024-01-02 11:00:00'
+        # Record from template 2 (FUNDER only)
+        - id: 3
+          templateId: 11
+          linkType: 'FUNDER'
+          url: 'https://dot.gov/plan2'
+          text: 'DOT Plan 2'
+          createdById: 999
+          created: '2024-01-05 10:00:00'
+          modifiedById: 999
+          modified: '2024-01-06 11:00:00'
+        # Record from template 3 (SAMPLE only)
+        - id: 4
+          templateId: 12
+          linkType: 'SAMPLE'
+          url: 'https://sample.only'
+          text: 'Only Sample'
+          createdById: 999
+          created: '2024-01-10 09:00:00'
+          modifiedById: 999
+          modified: '2024-01-10 09:30:00'
+
+  # -- Optional: test expectations for audits
+  audits:
+    - name: not_null
+      arguments:
+        columns:
+          - templateId
+          - linkType
+          - url
+          - text
+          - created
+          - createdById
+          - modified
+          - modifiedById
+      expect_pass: true
