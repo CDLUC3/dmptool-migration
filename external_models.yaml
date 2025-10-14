@@ -1,0 +1,11 @@
+
+- name: '`dmp`.`research_domains`'
+  columns:
+    id: BIGINT
+    identifier: VARCHAR(255)
+    label: VARCHAR(255)
+    parent_id: BIGINT
+    created_at: DATETIME
+    updated_at: DATETIME
+  gateway: mysql
+
