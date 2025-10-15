@@ -93,8 +93,8 @@ SELECT
   'PUBLISHED' AS versionType,
   COALESCE(oc.user_id, @VAR('super_admin_id')) AS versionedById,
   NULL AS comment,
-  vt.title AS name,
-  vt.description,
+  TRIM(vt.title) AS name,
+  TRIM(vt.description) AS description,
   CASE
     WHEN vt.org_id IS NULL THEN NULL
     WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)

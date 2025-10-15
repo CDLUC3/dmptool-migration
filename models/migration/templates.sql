@@ -56,8 +56,8 @@ WITH org_creator AS (
 SELECT
   ROW_NUMBER() OVER (ORDER BY t.created_at ASC) AS id,
   t.family_id,
-  t.title AS name,
-  t.description,
+  TRIM(t.title) AS name,
+  TRIM(t.description) AS description,
   (t.is_default = 1) AS bestPractice,
   CASE WHEN t.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS latestPublishVisibility,
   (t.published = 0) AS isDirty,

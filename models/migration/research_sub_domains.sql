@@ -32,10 +32,10 @@ MODEL (
 
 SELECT
     ROW_NUMBER() OVER () AS id,
-    REPLACE(LOWER(parent_rd.label), ' ', '-') AS parentResearchDomain,
-    REPLACE(LOWER(rd.label), ' ', '-') AS name,
-    CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(rd.label), ' ', '-')) AS uri,
-    rd.label AS description,
+    REPLACE(LOWER(TRIM(parent_rd.label)), ' ', '-') AS parentResearchDomain,
+    REPLACE(LOWER(TRIM(rd.label)), ' ', '-') AS name,
+    CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(TRIM(rd.label)), ' ', '-')) AS uri,
+    TRIM(rd.label) AS description,
     rd.created_at AS created,
     @VAR('super_admin_id') AS createdById,
     rd.updated_at AS modified,
