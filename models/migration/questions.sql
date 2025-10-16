@@ -42,6 +42,8 @@ MODEL (
   enabled true
 );
 
+-- Some JSON is really big because the options are wordy for some option based question types
+-- so we temporarily increase the group concat limit
 SET SESSION group_concat_max_len = 1048576;
 
 SELECT

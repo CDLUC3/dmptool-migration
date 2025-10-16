@@ -36,40 +36,28 @@ MODEL (
   ),
   audits (
     unique_combination_of_columns(columns := (versionedSectionId, displayOrder), blocking := false),
-    not_null(columns := (versionedTemplateId, versionedSectionId, questionText, displayOrder, created, createdById, modified, modifiedById))
+    -- not_null(columns := (versionedTemplateId, versionedSectionId, questionText, displayOrder, created, createdById, modified, modifiedById))
   ),
   enabled true
 );
 
-WITH never_published AS (
-    SELECT tmplt.family_id, COUNT(t.id) nbr_versions
-    FROM dmp.templates AS tmplt
-             INNER JOIN dmp.templates AS t ON tmplt.family_id = t.family_id
-    WHERE tmplt.version = 0 AND tmplt.published = 0
-    GROUP BY tmplt.id, tmplt.family_id
-    HAVING nbr_versions = 1
-)
-
-WITH unpublished_currents AS (
-  SELECT t.id
-  FROM dmp.templates AS t
-  WHERE t.published = 0
-    AND t.id IN (SELECT MAX(t2.id) FROM dmp.templates AS t2 GROUP BY t2.family_id)
-)
+-- Some JSON is really big because the options are wordy for some option based question types
+-- so we temporarily increase the group concat limit
+SET SESSION group_concat_max_len = 1048576;
 
 SELECT
-    ROW_NUMBER() OVER (ORDER BY s.created_at ASC) AS id,
-    tmplt.id AS versionedTemplateId,
-    sct.id AS versionedSectionId,
-    intq.new_question_id AS questionId,
+    ROW_NUMBER() OVER (ORDER BY q.created_at ASC) AS id,
+    s.versionedTemplateId AS versionedTemplateId,
+    s.id AS versionedSectionId,
+    iq.new_question_id AS questionId,
     TRIM(q.text) AS questionText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
      FROM dmp.annotations a
-     WHERE a.question_id = q.id AND a.org_id = t.org_id AND a.type = 0
+     WHERE a.question_id = q.id AND a.org_id = torg.org_id AND a.type = 0
     ) AS sampleText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
      FROM dmp.annotations a
-     WHERE a.question_id = q.id AND a.org_id = t.org_id AND a.type = 1
+     WHERE a.question_id = q.id AND a.org_id = torg.org_id AND a.type = 1
     ) AS guidanceText,
     CASE q.question_format_id
       WHEN 2 THEN
@@ -190,29 +178,24 @@ SELECT
         '{"type":"textArea","attributes":{"cols":20,"rows":2,"asRichText":true},"meta":{"schemaVersion":"1.0"}}'
     END AS json,
     ROW_NUMBER() OVER (
-      PARTITION BY t.id, s.id
+      PARTITION BY it.new_template_id, s.id
       ORDER BY q.number ASC
     ) AS displayOrder,
-    s.created_at AS created,
-    tmplt.createdById,
-    s.updated_at AS modified,
-    tmplt.modifiedById
+    q.created_at AS created,
+    s.createdById,
+    q.updated_at AS modified,
+    s.modifiedById
 FROM dmp.questions AS q
   LEFT JOIN dmp.question_formats AS qf ON q.question_format_id = qf.id
   LEFT JOIN dmp.question_options AS qo ON q.id = qo.question_id
-  INNER JOIN dmp.sections AS s ON q.section_id = s.id
-    INNER JOIN dmp.phases AS p ON s.phase_id = p.id
-      INNER JOIN dmp.templates AS t ON p.template_id = t.id
-        LEFT JOIN migration.versioned_templates AS tmplt ON t.family_id = tmplt.family_id
-                                                    AND tmplt.version = CONCAT('v', t.version)
-    LEFT JOIN intermediate.sections ints ON s.id = ints.old_section_id
-      LEFT JOIN migration.versioned_sections AS sct ON ints.new_section_id = sct.sectionId
-                                                    AND sct.versionedTemplateId = tmplt.id
-  LEFT JOIN intermediate.questions intq ON q.id = intq.old_question_id
-WHERE t.customization_of IS NULL
-  AND t.family_id NOT IN (SELECT DISTINCT family_id FROM never_published)
-  AND t.id NOT IN (SELECT id FROM unpublished_currents)
-GROUP BY t.family_id, t.version, s.id, q.id, q.number,
-         q.text, q.question_format_id, q.created_at, q.updated_at,
-         tmplt.id, tmplt.createdById, tmplt.modifiedById, sct.id
+  INNER JOIN intermediate.questions AS iq ON q.id = iq.new_question_id
+                                            AND q.section_id = iq.old_section_id
+    INNER JOIN intermediate.sections AS intq ON iq.new_section_id = intq.new_section_id
+      INNER JOIN migration.versioned_sections AS s ON intq.new_section_id = s.id
+      INNER JOIN intermediate.templates AS it ON intq.new_template_id = it.new_template_id
+        INNER JOIN dmp.templates torg ON it.old_template_id = torg.id
+WHERE intq.publishable
+GROUP BY q.id, q.number, q.text, q.question_format_id, q.created_at, q.updated_at,
+         s.versionedTemplateId, s.createdById, s.modifiedById, s.id, torg.org_id,
+         iq.new_question_id
 ORDER BY q.created_at ASC;

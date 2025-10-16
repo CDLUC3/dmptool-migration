@@ -59,3 +59,11 @@ FROM dmp.sections AS s
 WHERE t.customization_of IS NULL
   AND t.id = (SELECT MAX(temp.id) FROM dmp.templates AS temp WHERE temp.family_id = t.family_id)
 ORDER BY s.created_at ASC;
+
+-- Reconciliation queries:
+-- SELECT COUNT(id) from migration.sections; #2,366
+--
+-- SELECT COUNT(DISTINCT s.id)
+-- FROM dmp.templates t INNER JOIN dmp.phases p ON t.id = p.template_id INNER JOIN dmp.sections s ON p.id = s.phase_id
+-- WHERE t.customization_of IS NULL
+--   AND t.id = (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id); #2,366

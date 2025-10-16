@@ -36,22 +36,6 @@ MODEL (
   enabled true
 );
 
-WITH never_published AS (
-  SELECT tmplt.family_id, COUNT(t.id) nbr_versions
-  FROM dmp.templates AS tmplt
-    INNER JOIN dmp.templates AS t ON tmplt.family_id = t.family_id
-  WHERE tmplt.version = 0 AND tmplt.published = 0
-  GROUP BY tmplt.id, tmplt.family_id
-  HAVING nbr_versions = 1
-)
-
-WITH unpublished_currents AS (
-  SELECT t.id
-  FROM dmp.templates AS t
-  WHERE t.published = 0
-    AND t.id IN (SELECT MAX(t2.id) FROM dmp.templates AS t2 GROUP BY t2.family_id)
-)
-
 SELECT
   ROW_NUMBER() OVER (ORDER BY s.created_at ASC) AS id,
   tmplt.id AS versionedTemplateId,
@@ -73,7 +57,14 @@ FROM dmp.sections AS s
       LEFT JOIN migration.versioned_templates AS tmplt ON t.family_id = tmplt.family_id
                                                     AND tmplt.version = CONCAT('v', t.version)
   LEFT JOIN intermediate.sections ints ON s.id = ints.old_section_id
-WHERE t.customization_of IS NULL
-  AND t.family_id NOT IN (SELECT DISTINCT family_id FROM never_published)
-  AND t.id NOT IN (SELECT id FROM unpublished_currents)
+WHERE t.customization_of IS NULL AND ints.publishable
+GROUP BY tmplt.id, ints.new_section_id, s.title, s.description, s.number, tmplt.bestPractice,
+  s.created_at, tmplt.createdById, s.updated_at, tmplt.modifiedById
 ORDER BY s.created_at ASC;
+
+-- Reconciliation queries:
+-- SELECT COUNT(id) from migration.versioned_sections; #6,862
+--
+-- SELECT COUNT(DISTINCT s.id) FROM dmp.templates t INNER JOIN dmp.phases p ON t.id = p.template_id
+-- 	INNER JOIN dmp.sections s ON p.id = s.phase_id WHERE t.customization_of IS NULL AND (t.published = 1
+--   OR t.id != (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #6,261

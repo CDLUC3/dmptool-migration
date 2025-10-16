@@ -89,3 +89,8 @@ WHERE t.customization_of IS NULL
   AND t.family_id IS NOT NULL
   AND t.title IS NOT NULL
 ORDER BY t.created_at ASC;
+
+-- Reconciliation queries:
+-- SELECT COUNT(id) from migration.templates; #477
+--
+-- SELECT COUNT(DISTINCT family_id) FROM dmp.templates WHERE customization_of IS NULL; #477
