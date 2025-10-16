@@ -22,12 +22,14 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED PRIMARY KEY,
+    old_question_id INT,
     templateId INT NOT NULL,
     sectionId INT NOT NULL,
     questionText MEDIUMTEXT NOT NULL,
     json JSON,
     sampleText MEDIUMTEXT,
     guidanceText MEDIUMTEXT,
+    old_display_order INT,
     displayOrder INT NOT NULL,
     isDirty BOOLEAN NOT NULL DEFAULT 1,
     created TIMESTAMP NOT NULL,
@@ -47,23 +49,22 @@ MODEL (
 SET SESSION group_concat_max_len = 1048576;
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY s.created_at ASC) AS id,
+  ROW_NUMBER() OVER (ORDER BY q.id ASC) AS id,
+  q.id AS old_question_id,
   t.id AS templateId,
   s.id AS sectionId,
   TRIM(q.text) AS questionText,
   (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
    FROM dmp.annotations a
-   WHERE a.question_id = q.id AND a.org_id = o.id AND a.type = 0
+   WHERE a.question_id = q.id AND a.org_id = intt.old_org_id AND a.type = 0
   ) AS sampleText,
   (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
    FROM dmp.annotations a
-   WHERE a.question_id = q.id AND a.org_id = o.id AND a.type = 1
+   WHERE a.question_id = q.id AND a.org_id = intt.old_org_id AND a.type = 1
   ) AS guidanceText,
-  ROW_NUMBER() OVER (
-    PARTITION BY t.id, s.id
-    ORDER BY q.number ASC
-  ) AS displayOrder,
-  tmplt.isDirty AS isDirty,
+  q.number AS old_display_order,
+  ROW_NUMBER() OVER (PARTITION BY s.old_section_id ORDER BY q.number ASC) AS displayOrder,
+  t.isDirty AS isDirty,
   CASE q.question_format_id
     WHEN 2 THEN
       '{"type":"text","attributes":{"pattern":"^.+$","maxLength":1000,"minLength":0},"meta":{"schemaVersion":"1.0"}}'
@@ -182,20 +183,18 @@ SELECT
     ELSE
       '{"type":"textArea","attributes":{"cols":20,"rows":2,"asRichText":true},"meta":{"schemaVersion":"1.0"}}'
   END AS json,
-  tmplt.createdById,
+  t.createdById,
   q.created_at AS created,
-  tmplt.modifiedById,
+  t.modifiedById,
   q.updated_at AS modified
 FROM dmp.questions AS q
-  LEFT JOIN dmp.question_formats AS qf ON q.question_format_id = qf.id
   LEFT JOIN dmp.question_options AS qo ON q.id = qo.question_id
-  INNER JOIN dmp.sections AS s ON q.section_id = s.id
-    INNER JOIN dmp.phases AS p ON s.phase_id = p.id
-      INNER JOIN dmp.templates AS t ON p.template_id = t.id
-        INNER JOIN dmp.orgs AS o ON t.org_id = o.id
-        LEFT JOIN migration.templates AS tmplt ON t.family_id = tmplt.family_id
-WHERE t.customization_of IS NULL
-  AND t.id = (SELECT MAX(t2.id) FROM dmp.templates AS t2 WHERE t.family_id = t2.family_id)
-GROUP BY t.family_id, t.version, s.id, q.id, q.number,
-         q.text, q.question_format_id, q.created_at, q.updated_at,
-         tmplt.createdById, tmplt.modifiedById;
+  JOIN intermediate.questions AS intq ON q.id = intq.old_question_id
+    JOIN intermediate.sections AS ints ON intq.old_section_id = ints.old_section_id
+      JOIN migration.sections AS s ON ints.old_section_id = s.old_section_id
+      JOIN intermediate.templates AS intt ON intt.old_template_id = ints.old_template_id
+        JOIN migration.templates AS t ON intt.old_template_id = t.old_template_id
+GROUP BY q.id, t.id, s.id, s.old_section_id, q.text, q.number,
+         intt.old_org_id, t.isDirty, q.question_format_id,
+         t.createdById, t.modifiedById, q.created_at, q.updated_at
+ORDER BY q.created_at ASC;

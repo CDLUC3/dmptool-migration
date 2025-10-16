@@ -19,9 +19,11 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED PRIMARY KEY,
+    old_section_id INT,
     templateId INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     introduction MEDIUMTEXT,
+    old_display_order INT,
     displayOrder INT NOT NULL,
     bestPractice BOOLEAN NOT NULL DEFAULT 0,
     isDirty BOOLEAN NOT NULL DEFAULT 1,
@@ -39,26 +41,21 @@ MODEL (
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY s.created_at ASC) AS id,
-  tmplt.id AS templateId,
+  s.id AS old_section_id,
+  t.id AS templateId,
   TRIM(s.title) AS name,
   TRIM(s.description) AS introduction,
-  ROW_NUMBER() OVER (
-    PARTITION BY tmplt.id
-    ORDER BY s.number ASC
-  ) AS displayOrder,
-  tmplt.bestPractice AS bestPractice,
-  tmplt.isDirty AS isDirty,
+  s.number AS old_display_order,
+  ROW_NUMBER() OVER (PARTITION BY t.id ORDER BY s.number ASC) AS displayOrder,
+  t.bestPractice AS bestPractice,
+  t.isDirty AS isDirty,
   s.created_at AS created,
-  tmplt.createdById,
+  t.createdById,
   s.updated_at AS modified,
-  tmplt.modifiedById
+  t.modifiedById
 FROM dmp.sections AS s
-  JOIN dmp.phases AS p ON s.phase_id = p.id
-    JOIN dmp.templates AS t ON p.template_id = t.id
-    JOIN intermediate.templates AS intt ON t.id = intt.old_template_id
-      JOIN migration.templates AS tmplt ON intt.new_template_id = tmplt.id
-WHERE t.customization_of IS NULL AND intt.is_current_template
-  AND t.id = (SELECT MAX(temp.id) FROM dmp.templates AS temp WHERE temp.family_id = t.family_id)
+  JOIN intermediate.sections AS ints ON s.id = ints.old_section_id
+    JOIN migration.templates AS t ON ints.old_template_id = t.old_template_id
 ORDER BY s.created_at ASC;
 
 -- Reconciliation queries:

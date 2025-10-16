@@ -30,14 +30,14 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY links.id ASC) AS id,
-  tmplt.id AS templateId,
+  ROW_NUMBER() OVER (ORDER BY t.id ASC) AS id,
+  t.id AS templateId,
   links.linkType,
   links.url,
   links.text,
-  tmplt.createdById,
-  tmplt.created,
-  tmplt.modifiedById,
-  tmplt.modified
-FROM migration.templates AS tmplt
-  JOIN intermediate.template_links AS links ON tmplt.id = links.new_template_id;
+  t.createdById,
+  t.created,
+  t.modifiedById,
+  t.modified
+FROM migration.templates AS t
+  JOIN intermediate.template_links AS links ON t.old_template_id = links.old_template_id;

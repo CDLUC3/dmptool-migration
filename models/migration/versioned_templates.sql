@@ -22,7 +22,8 @@ MODEL (
   kind FULL,
   columns (
     id BIGINT UNSIGNED PRIMARY KEY,
-    family_id INT,
+    old_family_id INT,
+    old_template_id INT,
     template_id INT,
     active BOOLEAN NOT NULL DEFAULT 0,
     version VARCHAR(16) NOT NULL,
@@ -43,7 +44,7 @@ MODEL (
   audits (
     -- version number must be unique per template
     unique_combination_of_columns(columns := (template_id, version)),
-    not_null(columns := (family_id, template_id, version, versionedById, name, ownerId,
+    not_null(columns := (old_family_id, template_id, version, versionedById, name, ownerId,
              created, createdById, modified, modifiedById))
   ),
   enabled true
@@ -59,18 +60,19 @@ AUDIT (name dmptool_only_one_active_version_per_template);
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY vt.created_at ASC) AS id,
-  vt.family_id,
-  t.new_template_id AS template_id,
-  (vt.published = 1) AS active,
+  vt.family_id AS old_family_id,
+  vt.id AS old_template_id,
+  t.id AS template_id,
+  (intt.is_published) AS active,
   CONCAT('v', vt.version) AS version,
   'PUBLISHED' AS versionType,
-  COALESCE(t.creator_user_id, @VAR('super_admin_id')) AS versionedById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS versionedById,
   NULL AS comment,
   TRIM(vt.title) AS name,
   TRIM(vt.description) AS description,
   CASE
     WHEN vt.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', vt.org_id)
     ELSE ro.ror_id
   END AS ownerId,
   CASE WHEN vt.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS visibility,
@@ -79,15 +81,15 @@ SELECT
     WHEN vt.locale IN ('pt', 'pt-BR') OR vt.family_id IN (SELECT pt.family_id FROM migration.templates_pt_br AS pt) THEN 'pt-BR'
     ELSE 'en-US'
   END AS languageId,
-  COALESCE(t.creator_user_id, @VAR('super_admin_id')) AS createdById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS createdById,
   vt.created_at AS created,
-  COALESCE(t.creator_user_id, @VAR('super_admin_id')) AS modifiedById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS modifiedById,
   vt.updated_at AS modified
 FROM dmp.templates AS vt
-  INNER JOIN dmp.orgs AS o ON vt.org_id = o.id
-    LEFT OUTER JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
-  INNER JOIN intermediate.templates AS t ON vt.id = t.old_template_id
-WHERE vt.customization_of IS NULL AND (t.is_published OR t.was_published)
+  JOIN migration.templates AS t ON vt.family_id = t.old_family_id
+  JOIN intermediate.templates AS intt ON vt.id = intt.old_template_id
+    LEFT JOIN dmp.registry_orgs AS ro ON vt.org_id = ro.org_id
+WHERE vt.customization_of IS NULL AND (intt.is_published OR intt.was_published)
 ORDER BY vt.created_at ASC;
 
 -- Reconciliation queries:

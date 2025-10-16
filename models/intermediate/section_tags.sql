@@ -2,16 +2,16 @@ MODEL (
   name intermediate.section_tags,
   kind FULL,
   columns (
+    id INT PRIMARY KEY,
     old_section_id INT,
-    new_section_id INT,
     tag_id INT
   ),
   enabled true
 );
 
 SELECT DISTINCT
+  ROW_NUMBER() OVER (ORDER BY s.id ASC) AS id,
   ints.old_section_id,
-  ints.new_section_id,
   tags.id AS tag_id
 FROM dmp.sections s
   JOIN intermediate.sections AS ints ON s.id = ints.old_section_id

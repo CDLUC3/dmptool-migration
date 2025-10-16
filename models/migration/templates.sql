@@ -20,7 +20,8 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED PRIMARY KEY,
-    family_id INT,
+    old_family_id INT,
+    old_template_id INT,
     name VARCHAR(255) NOT NULL,
     description MEDIUMTEXT,
     ownerId VARCHAR(255) NOT NULL,
@@ -36,58 +37,41 @@ MODEL (
     modifiedById INT
   ),
   audits (
-    unique_values(columns := (family_id), blocking := false),
-    not_null(columns := (family_id, name, ownerId, created, createdById, modified, modifiedById))
+    unique_values(columns := (old_family_id), blocking := false),
+    not_null(columns := (old_family_id, name, ownerId, created, createdById, modified, modifiedById))
   ),
   enabled true
 );
 
-WITH org_creator AS (
-  SELECT
-    u.org_id,
-    COALESCE(mu.id, @VAR('super_admin_id')) AS user_id
-  FROM dmp.users AS u
-    INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
-      LEFT JOIN migration.users AS mu ON u.email = mu.email
-  WHERE u.org_id IS NOT NULL
-  QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
-)
-
 SELECT
   ROW_NUMBER() OVER (ORDER BY t.created_at ASC) AS id,
-  t.family_id,
+  t.family_id AS old_family_id,
+  t.id AS old_template_id,
   TRIM(t.title) AS name,
   TRIM(t.description) AS description,
-  (t.is_default = 1) AS bestPractice,
+  intt.best_practice AS bestPractice,
   CASE WHEN t.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS latestPublishVisibility,
-  (t.published = 0) AS isDirty,
-  CASE
-    WHEN t.published = 1 THEN CONCAT('v', t.version)
-    WHEN t.published = 0 AND t.version > 0 THEN CONCAT('v', t.version - 1)
-    ELSE NULL
-  END AS latestPublishVersion,
-  CASE WHEN t.published = 1 OR t.version > 0 THEN t.updated_at ELSE NULL END AS latestPublishDate,
+  (intt.is_published = 0) AS isDirty,
+  CASE WHEN intt.is_published THEN CONCAT('v', t.version) ELSE NULL END AS latestPublishVersion,
+  CASE WHEN intt.is_published THEN t.updated_at ELSE NULL END AS latestPublishDate,
   CASE
     WHEN t.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', t.org_id)
     ELSE ro.ror_id
   END AS ownerId,
   CASE
     WHEN t.locale IN ('pt', 'pt-BR') OR t.family_id IN (SELECT pt.family_id FROM migration.templates_pt_br AS pt) THEN 'pt-BR'
     ELSE 'en-US'
   END AS languageId,
-  COALESCE(oc.user_id, @VAR('super_admin_id')) AS createdById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS createdById,
   t.created_at AS created,
-  COALESCE(oc.user_id, @VAR('super_admin_id')) AS modifiedById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS modifiedById,
   t.updated_at AS modified
 FROM dmp.templates AS t
-  JOIN dmp.orgs AS o ON t.org_id = o.id
-    LEFT JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
-    LEFT JOIN org_creator AS oc ON oc.org_id = o.id
+  JOIN intermediate.templates AS intt ON t.id = intt.old_template_id
+    LEFT JOIN dmp.registry_orgs AS ro ON t.org_id = ro.org_id
 WHERE t.customization_of IS NULL
-  AND t.id = (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)
-  AND t.family_id IS NOT NULL
-  AND t.title IS NOT NULL
+  AND intt.is_current_template
 ORDER BY t.created_at ASC;
 
 -- Reconciliation queries:

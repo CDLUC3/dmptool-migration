@@ -21,6 +21,7 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED PRIMARY KEY,
+    old_question_id INT,
     versionedTemplateId INT NOT NULL,
     versionedSectionId INT NOT NULL,
     questionId INT NOT NULL,
@@ -45,21 +46,32 @@ MODEL (
 -- so we temporarily increase the group concat limit
 SET SESSION group_concat_max_len = 1048576;
 
+WITH root_questions AS (
+  SELECT
+    sectionId,
+    id AS questionId,
+    LOWER(TRIM(questionText)) as text,
+    old_display_order,
+    displayOrder
+  FROM migration.questions
+)
+
 SELECT
-    ROW_NUMBER() OVER (ORDER BY q.created_at ASC) AS id,
-    s.versionedTemplateId AS versionedTemplateId,
-    s.id AS versionedSectionId,
-    iq.new_question_id AS questionId,
-    TRIM(q.text) AS questionText,
+    ROW_NUMBER() OVER (ORDER BY vq.created_at ASC) AS id,
+    vs.versionedTemplateId AS versionedTemplateId,
+    vq.id AS old_question_id,
+    vs.id AS versionedSectionId,
+    rq.questionId AS questionId,
+    TRIM(vq.text) AS questionText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
      FROM dmp.annotations a
-     WHERE a.question_id = q.id AND a.org_id = torg.org_id AND a.type = 0
+     WHERE a.question_id = vq.id AND a.org_id = intt.old_org_id AND a.type = 0
     ) AS sampleText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
      FROM dmp.annotations a
-     WHERE a.question_id = q.id AND a.org_id = torg.org_id AND a.type = 1
+     WHERE a.question_id = vq.id AND a.org_id = intt.old_org_id AND a.type = 1
     ) AS guidanceText,
-    CASE q.question_format_id
+    CASE vq.question_format_id
       WHEN 2 THEN
         '{"type":"text","attributes":{"pattern":"^.+$","maxLength":1000,"minLength":0},"meta":{"schemaVersion":"1.0"}}'
       WHEN 3 THEN
@@ -177,25 +189,21 @@ SELECT
       ELSE
         '{"type":"textArea","attributes":{"cols":20,"rows":2,"asRichText":true},"meta":{"schemaVersion":"1.0"}}'
     END AS json,
-    ROW_NUMBER() OVER (
-      PARTITION BY it.new_template_id, s.id
-      ORDER BY q.number ASC
-    ) AS displayOrder,
-    q.created_at AS created,
-    s.createdById,
-    q.updated_at AS modified,
-    s.modifiedById
-FROM dmp.questions AS q
-  LEFT JOIN dmp.question_formats AS qf ON q.question_format_id = qf.id
-  LEFT JOIN dmp.question_options AS qo ON q.id = qo.question_id
-  INNER JOIN intermediate.questions AS iq ON q.id = iq.new_question_id
-                                            AND q.section_id = iq.old_section_id
-    INNER JOIN intermediate.sections AS intq ON iq.new_section_id = intq.new_section_id
-      INNER JOIN migration.versioned_sections AS s ON intq.new_section_id = s.id
-      INNER JOIN intermediate.templates AS it ON intq.new_template_id = it.new_template_id
-        INNER JOIN dmp.templates torg ON it.old_template_id = torg.id
-WHERE intq.publishable
-GROUP BY q.id, q.number, q.text, q.question_format_id, q.created_at, q.updated_at,
-         s.versionedTemplateId, s.createdById, s.modifiedById, s.id, torg.org_id,
-         iq.new_question_id
-ORDER BY q.created_at ASC;
+    ROW_NUMBER() OVER (PARTITION BY vs.id ORDER BY vq.number ASC) AS displayOrder,
+    vq.created_at AS created,
+    vs.createdById,
+    vq.updated_at AS modified,
+    vs.modifiedById
+FROM dmp.questions AS vq
+  LEFT JOIN dmp.question_options AS qo ON vq.id = qo.question_id
+  JOIN intermediate.questions AS intq ON vq.id = intq.old_question_id
+    JOIN intermediate.sections AS ints ON ints.old_section_id = intq.old_section_id
+      JOIN intermediate.templates AS intt ON ints.old_template_id = intt.old_template_id
+      JOIN migration.versioned_sections AS vs ON ints.old_section_id = vs.old_section_id
+        JOIN root_questions AS rq ON vs.sectionId = rq.sectionId
+                                    AND (rq.text = LOWER(TRIM(vq.text))
+                                          OR (vq.number = rq.old_display_order))
+GROUP BY vq.created_at, vs.versionedTemplateId, vq.id, vs.id, rq.questionId, vq.text,
+         vq.number, intt.old_org_id, vq.question_format_id,
+         vs.createdById, vs.modifiedById, vq.updated_at
+ORDER BY vq.created_at ASC;

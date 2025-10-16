@@ -1,6 +1,6 @@
---  Target schema (table `sectionTags`):
+--  Target schema (table `versionedSectionTags`):
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `sectionId` int NOT NULL,
+--  `versionedSectionId` int NOT NULL,
 --  `tagId` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `createdById` int NOT NULL,
@@ -8,11 +8,11 @@
 --  `modifiedById` int NOT NULL,
 
 MODEL (
-  name migration.section_tags,
+  name migration.versioned_section_tags,
   kind FULL,
   columns (
     id INT UNSIGNED PRIMARY KEY,
-    sectionId INT NOT NULL,
+    versionedSectionId INT NOT NULL,
     tagId INT NOT NULL,
     created TIMESTAMP NOT NULL,
     createdById INT UNSIGNED NOT NULL,
@@ -21,18 +21,18 @@ MODEL (
   ),
   audits (
     -- unique_combination_of_columns(columns := (sectionId, tagId)),
-    not_null(columns := (sectionId, tagId, created, createdById, modified, modifiedById))
+    not_null(columns := (versionedSectionId, tagId, created, createdById, modified, modifiedById))
   ),
   enabled true
 );
 
 SELECT DISTINCT
-  ROW_NUMBER() OVER (ORDER BY s.id) AS id,
-  s.id AS sectionId,
-  ints.tag_id AS tagId,
-  s.created,
-  s.createdById,
-  s.modified,
-  s.modifiedById
-FROM migration.sections AS s
-  JOIN intermediate.section_tags AS ints ON s.old_section_id = ints.old_section_id;
+    ROW_NUMBER() OVER (ORDER BY tags.id) AS id,
+    vs.id AS versionedSectionId,
+    tags.tag_id AS tagId,
+    vs.created,
+    vs.createdById,
+    vs.modified,
+    vs.modifiedById
+FROM migration.versioned_sections AS vs
+  JOIN intermediate.section_tags AS tags ON tags.old_section_id = vs.old_section_id;
