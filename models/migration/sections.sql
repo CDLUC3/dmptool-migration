@@ -53,10 +53,11 @@ SELECT
   s.updated_at AS modified,
   tmplt.modifiedById
 FROM dmp.sections AS s
-  INNER JOIN dmp.phases AS p ON s.phase_id = p.id
-    INNER JOIN dmp.templates AS t ON p.template_id = t.id
-      LEFT JOIN migration.templates AS tmplt ON t.family_id = tmplt.family_id
-WHERE t.customization_of IS NULL
+  JOIN dmp.phases AS p ON s.phase_id = p.id
+    JOIN dmp.templates AS t ON p.template_id = t.id
+    JOIN intermediate.templates AS intt ON t.id = intt.old_template_id
+      JOIN migration.templates AS tmplt ON intt.new_template_id = tmplt.id
+WHERE t.customization_of IS NULL AND intt.is_current_template
   AND t.id = (SELECT MAX(temp.id) FROM dmp.templates AS temp WHERE temp.family_id = t.family_id)
 ORDER BY s.created_at ASC;
 

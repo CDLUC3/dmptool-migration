@@ -10,12 +10,17 @@ MODEL (
     creator_user_id INT,
     is_published BOOLEAN,
     was_published BOOLEAN,
+    is_current_template BOOLEAN,
     old_template_id INT NOT NULL,
-    new_template_id INT,
-    matchConfidence DECIMAL(3,2),
-    unmatchedFlag BOOLEAN
+    new_template_id INT
   )
 );
+
+WITH current_ids AS (
+  SELECT t.family_id, MAX(t.id) AS current_id
+  FROM dmp.templates AS t
+  GROUP BY t.family_id
+)
 
 WITH never_published AS (
   SELECT tmplt.family_id, COUNT(t.id) nbr_versions
@@ -30,7 +35,7 @@ WITH unpublished_currents (
   SELECT t.id
   FROM dmp.templates AS t
   WHERE t.published = 0
-    AND t.id IN (SELECT MAX(t2.id) FROM dmp.templates AS t2 GROUP BY t2.family_id)
+    AND t.id IN (SELECT current_id FROM current_ids)
 )
 
 WITH ordered_old AS (
@@ -44,13 +49,14 @@ WITH ordered_old AS (
     CASE
       WHEN t.published = 1 THEN FALSE
       WHEN t.published = 0
-        AND t.id != (SELECT MAX(t2.id) FROM dmp.templates AS t2 WHERE t2.family_id = t.family_id) THEN TRUE
+        AND t.id != (SELECT ci.current_id FROM current_ids AS ci WHERE ci.family_id = t.family_id) THEN TRUE
       ELSE FALSE
     END AS was_published
   FROM dmp.templates t
     LEFT JOIN never_published np ON t.family_id = np.family_id
     LEFT JOIN unpublished_currents uc ON t.id = uc.id
 ),
+
 ordered_new AS (
   SELECT
     t.id AS new_template_id,
@@ -66,6 +72,9 @@ SELECT
   n.createdById AS creator_user_id,
   o.is_published,
   o.was_published,
+  (o.old_template_id = (SELECT ci.current_id
+                        FROM current_ids AS ci
+                        WHERE ci.family_id = o.family_id)) AS is_current_template,
   o.old_template_id,
   n.new_template_id,
   CASE

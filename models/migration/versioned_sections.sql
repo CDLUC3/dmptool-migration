@@ -52,8 +52,8 @@ SELECT
   s.updated_at AS modified,
   tmplt.modifiedById
 FROM dmp.sections AS s
-  INNER JOIN dmp.phases AS p ON s.phase_id = p.id
-    INNER JOIN dmp.templates AS t ON p.template_id = t.id
+  JOIN dmp.phases AS p ON s.phase_id = p.id
+    JOIN dmp.templates AS t ON p.template_id = t.id
       LEFT JOIN migration.versioned_templates AS tmplt ON t.family_id = tmplt.family_id
                                                     AND tmplt.version = CONCAT('v', t.version)
   LEFT JOIN intermediate.sections ints ON s.id = ints.old_section_id

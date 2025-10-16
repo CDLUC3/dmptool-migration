@@ -81,8 +81,8 @@ SELECT
   COALESCE(oc.user_id, @VAR('super_admin_id')) AS modifiedById,
   t.updated_at AS modified
 FROM dmp.templates AS t
-  INNER JOIN dmp.orgs AS o ON t.org_id = o.id
-    LEFT OUTER JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
+  JOIN dmp.orgs AS o ON t.org_id = o.id
+    LEFT JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
     LEFT JOIN org_creator AS oc ON oc.org_id = o.id
 WHERE t.customization_of IS NULL
   AND t.id = (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)
