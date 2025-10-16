@@ -22,7 +22,8 @@ MODEL (
   kind FULL,
   columns (
     id BIGINT UNSIGNED PRIMARY KEY,
-    family_id INT,
+    old_family_id INT,
+    old_template_id INT,
     template_id INT,
     active BOOLEAN NOT NULL DEFAULT 0,
     version VARCHAR(16) NOT NULL,
@@ -43,7 +44,7 @@ MODEL (
   audits (
     -- version number must be unique per template
     unique_combination_of_columns(columns := (template_id, version)),
-    not_null(columns := (family_id, template_id, version, versionedById, name, ownerId,
+    not_null(columns := (old_family_id, template_id, version, versionedById, name, ownerId,
              created, createdById, modified, modifiedById))
   ),
   enabled true
@@ -57,47 +58,21 @@ AUDIT (name dmptool_only_one_active_version_per_template);
   GROUP BY template_id
   HAVING COUNT(*) > 1;
 
-WITH org_creator AS (
-  SELECT
-    u.org_id,
-    COALESCE(mu.id, @VAR('super_admin_id')) AS user_id
-  FROM dmp.users AS u
-    INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
-      LEFT JOIN migration.users AS mu ON u.email = mu.email
-  WHERE u.org_id IS NOT NULL
-  QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
-)
-
-WITH never_published AS (
-  SELECT tmplt.family_id, COUNT(t.id) nbr_versions
-  FROM dmp.templates AS tmplt
-    INNER JOIN dmp.templates AS t ON tmplt.family_id = t.family_id
-  WHERE tmplt.version = 0 AND tmplt.published = 0
-  GROUP BY tmplt.id, tmplt.family_id
-  HAVING nbr_versions = 1
-)
-
-WITH unpublished_currents (
-  SELECT t.id
-  FROM dmp.templates AS t
-  WHERE t.published = 0
-    AND t.id IN (SELECT MAX(t2.id) FROM dmp.templates AS t2 GROUP BY t2.family_id)
-)
-
 SELECT
   ROW_NUMBER() OVER (ORDER BY vt.created_at ASC) AS id,
-  vt.family_id,
+  vt.family_id AS old_family_id,
+  vt.id AS old_template_id,
   t.id AS template_id,
-  (vt.published = 1) AS active,
+  (intt.is_published) AS active,
   CONCAT('v', vt.version) AS version,
   'PUBLISHED' AS versionType,
-  COALESCE(oc.user_id, @VAR('super_admin_id')) AS versionedById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS versionedById,
   NULL AS comment,
-  vt.title AS name,
-  vt.description,
+  TRIM(vt.title) AS name,
+  TRIM(vt.description) AS description,
   CASE
     WHEN vt.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', vt.org_id)
     ELSE ro.ror_id
   END AS ownerId,
   CASE WHEN vt.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS visibility,
@@ -106,16 +81,19 @@ SELECT
     WHEN vt.locale IN ('pt', 'pt-BR') OR vt.family_id IN (SELECT pt.family_id FROM migration.templates_pt_br AS pt) THEN 'pt-BR'
     ELSE 'en-US'
   END AS languageId,
-  COALESCE(oc.user_id, @VAR('super_admin_id')) AS createdById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS createdById,
   vt.created_at AS created,
-  COALESCE(oc.user_id, @VAR('super_admin_id')) AS modifiedById,
+  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS modifiedById,
   vt.updated_at AS modified
 FROM dmp.templates AS vt
-  INNER JOIN dmp.orgs AS o ON vt.org_id = o.id
-    LEFT JOIN org_creator AS oc ON oc.org_id = o.id
-    LEFT OUTER JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
-  INNER JOIN migration.templates AS t ON vt.family_id = t.family_id
-WHERE vt.customization_of IS NULL
-  AND vt.family_id NOT IN (SELECT DISTINCT family_id FROM never_published)
-  AND vt.id NOT IN (SELECT id FROM unpublished_currents)
+  JOIN migration.templates AS t ON vt.family_id = t.old_family_id
+  JOIN intermediate.templates AS intt ON vt.id = intt.old_template_id
+    LEFT JOIN dmp.registry_orgs AS ro ON vt.org_id = ro.org_id
+WHERE vt.customization_of IS NULL AND (intt.is_published OR intt.was_published)
 ORDER BY vt.created_at ASC;
+
+-- Reconciliation queries:
+-- SELECT COUNT(id) FROM migration.versioned_templates; #948
+--
+-- SELECT COUNT(DISTINCT t.id) FROM dmp.templates t WHERE t.customization_of IS NULL AND (t.published = 1
+--   OR t.id != (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #948

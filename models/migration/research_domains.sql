@@ -17,6 +17,7 @@ MODEL (
     name VARCHAR(255) NOT NULL,
     uri VARCHAR(255) NOT NULL,
     description VARCHAR(255),
+    parentResearchDomainId INT,
     created TIMESTAMP NOT NULL,
     createdById INT,
     modified TIMESTAMP NOT NULL,
@@ -30,13 +31,13 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER () AS id,
-  REPLACE(LOWER(rd.label), ' ', '-') AS name,
-  CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(rd.label), ' ', '-')) AS uri,
-  rd.label AS description,
+  rd.id,
+  REPLACE(LOWER(TRIM(rd.label)), ' ', '-') AS name,
+  CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(TRIM(rd.label)), ' ', '-')) AS uri,
+  TRIM(rd.label) AS description,
+  rd.parent_id AS parentResearchDomainId,
   rd.created_at AS created,
   @VAR('super_admin_id') AS createdById,
   rd.updated_at AS modified,
   @VAR('super_admin_id') AS modifiedById
-FROM dmp.research_domains AS rd
-WHERE rd.parent_id IS NULL;
+FROM dmp.research_domains AS rd;

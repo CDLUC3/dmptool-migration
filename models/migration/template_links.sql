@@ -30,49 +30,14 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY t.id ASC, links.link_order ASC) AS id,
-  tmplt.id AS templateId,
-  'FUNDER' AS linkType,
-  links.link AS url,
-  CASE WHEN links.text IS NULL OR links.text = '' THEN links.link ELSE links.text END AS text,
-  @VAR('super_admin_id') AS createdById,
-  t.created_at AS created,
-  @VAR('super_admin_id') AS modifiedById,
-  t.updated_at AS modified
-FROM dmp.templates t
-  LEFT JOIN migration.templates tmplt ON t.family_id = tmplt.family_id
-  JOIN JSON_TABLE(
-    t.links,
-    '$.funder[*]'
-    COLUMNS(
-      link_order FOR ORDINALITY,
-      link VARCHAR(255) PATH '$.link',
-      text VARCHAR(255) PATH '$.text'
-    )
-  ) AS links
-WHERE t.customization_of IS NULL AND tmplt.id IS NOT NULL
-
-UNION ALL
-
-SELECT
-  ROW_NUMBER() OVER (ORDER BY t.id ASC, links.link_order ASC) AS id,
-  tmplt.id AS templateId,
-  'SAMPLE' AS linkType,
-  links.link AS url,
-  CASE WHEN links.text IS NULL OR links.text = '' THEN links.link ELSE links.text END AS text,
-  @VAR('super_admin_id') AS createdById,
-  t.created_at AS created,
-  @VAR('super_admin_id') AS modifiedById,
-  t.updated_at AS modified
-FROM dmp.templates t
-  LEFT JOIN migration.templates tmplt ON t.family_id = tmplt.family_id
-  JOIN JSON_TABLE(
-    t.links,
-    '$.sample_plan[*]'
-    COLUMNS(
-      link_order FOR ORDINALITY,
-      link VARCHAR(255) PATH '$.link',
-      text VARCHAR(255) PATH '$.text'
-    )
-  ) AS links
-WHERE t.customization_of IS NULL AND tmplt.id IS NOT NULL;
+  ROW_NUMBER() OVER (ORDER BY t.id ASC) AS id,
+  t.id AS templateId,
+  links.linkType,
+  links.url,
+  links.text,
+  t.createdById,
+  t.created,
+  t.modifiedById,
+  t.modified
+FROM migration.templates AS t
+  JOIN intermediate.template_links AS links ON t.old_template_id = links.old_template_id;

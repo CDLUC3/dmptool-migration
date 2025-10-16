@@ -31,8 +31,8 @@ MODEL (
 SELECT
   ROW_NUMBER() OVER () AS id,
   LOWER(REPLACE(t.title, ' ', '-')) AS slug,
-  t.title AS name,
-  t.description,
+  TRIM(t.title) AS name,
+  TRIM(t.description) AS description,
   t.created_at AS created,
   @VAR('super_admin_id') AS createdById,
   t.updated_at AS modified,
