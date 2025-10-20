@@ -10,6 +10,9 @@ MODEL (
     old_created_at DATETIME,
     customization_of_family_id INT,
     best_practice BOOLEAN,
+    visibility INT,
+    version INT,
+    old_updated_at DATETIME,
     is_published BOOLEAN,
     was_published BOOLEAN,
     is_current_template BOOLEAN,
@@ -41,6 +44,9 @@ SELECT
   t.created_at AS old_created_at,
   t.customization_of AS customization_of_family_id,
   t.is_default AS best_practice,
+  t.visibility AS visibility,
+  t.version AS version,
+  t.updated_at AS old_updated_at,
   t.published AS is_published,
   CASE
     WHEN t.published = 1 THEN FALSE

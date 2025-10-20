@@ -78,6 +78,106 @@ test_templates:
         - id: 54321
           email: "super@example.com"
 
+    intermediate.templates:
+      rows:
+        - family_id: 12345
+          old_template_id: 1
+          old_org_id: 1
+          old_created_at: "2025-09-01 01:14:14"
+          customization_of_family_id: null
+          best_practice: 0
+          is_published: 1
+          was_published: 0
+          old_updated_at: "2025-09-15 11:33:17"
+          visibility: 0
+          version: 1
+          is_current_template: 1
+          new_created_by_id: 9876
+
+        - family_id: 98765
+          old_template_id: 2
+          old_org_id: 1
+          old_created_at: "2025-09-02 02:14:14"
+          customization_of_family_id: null
+          best_practice: 0
+          is_published: 1
+          was_published: 0
+          old_updated_at: "2025-09-15 11:33:17"
+          visibility: 1
+          version: 2
+          is_current_template: 1
+          new_created_by_id: 9876
+
+        - family_id: 54321
+          old_template_id: 3
+          old_org_id: 1
+          old_created_at: "2025-09-03 03:14:14"
+          customization_of_family_id: null
+          best_practice: 0
+          is_published: 0
+          was_published: 0
+          old_updated_at: "2025-09-15 11:33:17"
+          visibility: 1
+          version: 1
+          is_current_template: 1
+          new_created_by_id: 9876
+
+        - family_id: 67890
+          old_template_id: 6
+          old_org_id: 2
+          old_created_at: "2025-01-01 04:14:14"
+          customization_of_family_id: null
+          best_practice: 1
+          is_published: 0
+          was_published: 0
+          old_updated_at: "2025-01-01 11:33:17"
+          visibility: 1
+          version: 5
+          is_current_template: 1
+          new_created_by_id: 54321
+
+        - family_id: 67890
+          old_template_id: 5
+          old_org_id: 2
+          old_created_at: "2024-01-01 04:14:14"
+          customization_of_family_id: null
+          best_practice: 1
+          is_published: 1
+          was_published: 0
+          old_updated_at: "2024-01-01 11:33:17"
+          visibility: 1
+          version: 4
+          is_current_template: 0
+          new_created_by_id: 54321
+
+        - family_id: 67890
+          old_template_id: 4
+          old_org_id: 2
+          old_created_at: "2023-01-01 04:14:14"
+          customization_of_family_id: null
+          best_practice: 1
+          is_published: 0
+          was_published: 1
+          old_updated_at: "2023-01-01 11:33:17"
+          visibility: 1
+          version: 3
+          is_current_template: 0
+          new_created_by_id: 54321
+
+        - family_id: 90909
+          old_template_id: 7
+          old_org_id: 2
+          old_created_at: "2025-01-01 04:14:14"
+          customization_of_family_id: 67890
+          best_practice: 0
+          is_published: 1
+          old_updated_at: "2025-09-15 11:33:17"
+          visibility: 0
+          version: 1
+          was_published: 0
+          is_current_template: 1
+          new_created_by_id: 54321
+
     dmp.templates:
       columns:
         customization_of: INT
@@ -130,7 +230,7 @@ test_templates:
           archived: 0
           links: "{\"funder\":[],\"sample_plan\":[]}"
 
-        - id: 4
+        - id: 6
           title: "Best Practice Template"
           description: "<p class=\"Normal\">Test best practice template</p>"
           published: 0
@@ -147,6 +247,38 @@ test_templates:
           links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
 
         - id: 5
+          title: "Best Practice Template"
+          description: "<p class=\"Normal\">Test best practice template</p>"
+          published: 1
+          org_id: 2
+          locale: "en-US"
+          is_default: 1
+          created_at: "2024-01-01 04:14:14"
+          updated_at: "2024-01-01 11:33:17"
+          version: 4
+          visibility: 1
+          customization_of: null
+          family_id: 67890
+          archived: 0
+          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
+
+        - id: 4
+          title: "Best Practice Template"
+          description: "<p class=\"Normal\">Test best practice template</p>"
+          published: 0
+          org_id: 2
+          locale: "en-US"
+          is_default: 1
+          created_at: "2023-01-01 04:14:14"
+          updated_at: "2023-01-01 11:33:17"
+          version: 3
+          visibility: 1
+          customization_of: null
+          family_id: 67890
+          archived: 0
+          links: "{\"funder\":[{\"link\":\"https://www.example.com/funder\",\"text\":\"Example\"}],\"sample_plan\":[{\"link\":\"https://www.example.com/sample\",\"text\":\"Sample\"}]}"
+
+        - id: 7
           title: "Customization of a Template"
           description: "<p class=\"Normal\">Template customization</p>"
           published: 1
@@ -161,19 +293,19 @@ test_templates:
           family_id: 90909
           archived: 0
           links: "{\"funder\":[],\"sample_plan\":[]}"
-
   outputs:
     query:
       rows:
         - id: 1
-          family_id: 67890
+          old_template_id: 6
+          old_family_id: 67890
           name: "Best Practice Template"
           description: "<p class=\"Normal\">Test best practice template</p>"
           bestPractice: true
           latestPublishVisibility: "PUBLIC"
           isDirty: true
           latestPublishVersion: "v4"
-          latestPublishDate: "2025-01-01 11:33:17"
+          latestPublishDate: "2024-01-01 11:33:17"
           ownerId: "https://ror.org/xxxxxxxx"
           languageId: 'en-US'
           created: "2025-01-01 04:14:14"
@@ -182,7 +314,8 @@ test_templates:
           modifiedById: 54321
 
         - id: 2
-          family_id: 12345
+          old_template_id: 1
+          old_family_id: 12345
           name: "Published Organizational Template"
           description: "<p class=\"Normal\">Test published organizational template</p>"
           bestPractice: false
@@ -198,7 +331,8 @@ test_templates:
           modifiedById: 9876
 
         - id: 3
-          family_id: 98765
+          old_template_id: 2
+          old_family_id: 98765
           name: "Published Public Template"
           description: "<p class=\"Normal\">Test published template</p>"
           bestPractice: false
@@ -214,11 +348,12 @@ test_templates:
           modifiedById: 9876
 
         - id: 4
-          family_id: 54321
+          old_template_id: 3
+          old_family_id: 54321
           name: "Unpublished Template"
           description: "<p class=\"Normal\">Test unpublished template</p>"
           bestPractice: false
-          latestPublishVisibility: "PUBLIC"
+          latestPublishVisibility: null
           isDirty: true
           latestPublishVersion: null
           latestPublishDate: null

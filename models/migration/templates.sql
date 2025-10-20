@@ -43,6 +43,16 @@ MODEL (
   enabled true
 );
 
+WITH latest_published AS (
+  SELECT inttmplt.family_id,
+         inttmplt.old_template_id,
+         inttmplt.visibility,
+         inttmplt.version,
+         inttmplt.old_updated_at
+  FROM intermediate.templates AS inttmplt
+  WHERE inttmplt.is_published = 1
+)
+
 SELECT
   ROW_NUMBER() OVER (ORDER BY t.created_at ASC) AS id,
   t.family_id AS old_family_id,
@@ -50,10 +60,13 @@ SELECT
   TRIM(t.title) AS name,
   TRIM(t.description) AS description,
   intt.best_practice AS bestPractice,
-  CASE WHEN t.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS latestPublishVisibility,
+  CASE WHEN intt.family_id == lp.family_id
+    CASE WHEN lp.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END
+    ELSE NULL
+  END AS latestPublishVisibility,
   (intt.is_published = 0) AS isDirty,
-  CASE WHEN intt.is_published THEN CONCAT('v', t.version) ELSE NULL END AS latestPublishVersion,
-  CASE WHEN intt.is_published THEN t.updated_at ELSE NULL END AS latestPublishDate,
+  CASE WHEN intt.family_id == lp.family_id THEN CONCAT('v', lp.version) ELSE NULL END AS latestPublishVersion,
+  CASE WHEN intt.family_id == lp.family_id THEN lp.old_updated_at ELSE NULL END AS latestPublishDate,
   CASE
     WHEN t.org_id IS NULL THEN NULL
     WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', t.org_id)
@@ -68,6 +81,7 @@ SELECT
   COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS modifiedById,
   t.updated_at AS modified
 FROM dmp.templates AS t
+  LEFT JOIN latest_published AS lp ON t.family_id = lp.family_id
   JOIN intermediate.templates AS intt ON t.id = intt.old_template_id
     LEFT JOIN dmp.registry_orgs AS ro ON t.org_id = ro.org_id
 WHERE t.customization_of IS NULL
