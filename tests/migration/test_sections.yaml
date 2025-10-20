@@ -1,0 +1,80 @@
+test_sections:
+  model: migration.sections
+
+  vars:
+    super_admin_id: 999
+
+  inputs:
+    sections:
+      - id: 1
+        phase_id: 10
+        title: "Section one"
+        description: "Overview of the project"
+        number: 1
+        created_at: 2023-01-01T00:00:00Z
+        updated_at: 2023-01-02T00:00:00Z
+
+      - id: 2
+        phase_id: 20
+        title: "Section two"
+        description: "Details of project"
+        number: 2
+        created_at: 2024-01-01T00:00:00Z
+        updated_at: 2024-01-01T00:00:00Z
+
+      - id: 3
+        phase_id: 10
+        title: "Section three"
+        description: "More details"
+        number: 3
+        created_at: 2025-05-01T00:00:00Z
+        updated_at: 2025-05-01T00:00:00Z
+
+    phases:
+      - id: 10
+        template_id: 100
+
+      - id: 20
+        template_id: 200
+
+    templates:
+      - id: 100
+        family_id: 500
+        customization_of: null
+
+      - id: 200
+        family_id: 600
+        customization_of: 100  # excluded customized version
+
+    migration.templates:
+      - id: 900
+        family_id: 500
+
+      - id: 901
+        family_id: 600
+
+  outputs:
+    query:
+      - id: 1
+        templateId: 900
+        name: "Section One"
+        introduction: "Overview of the project"
+        displayOrder: 1
+        bestPractice: false
+        isDirty: true
+        created: 2023-01-01T00:00:00Z
+        createdById: 999
+        modified: 2023-01-02T00:00:00Z
+        modifiedById: 999
+
+      - id: 3
+        templateId: 900
+        name: "Section Three"
+        introduction: "More details"
+        displayOrder: 3
+        bestPractice: false
+        isDirty: true
+        created: 2025-05-01T00:00:00Z
+        createdById: 999
+        modified: 2025-05-01T00:00:00Z
+        modifiedById: 999

@@ -33,8 +33,8 @@ SELECT
     WHEN ro.org_id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
     ELSE ro.ror_id
   END AS affiliationId,
-  links.link AS url,
-  links.text AS text,
+  TRIM(links.link) AS url,
+  TRIM(links.text) AS text,
   @VAR('super_admin_id') AS createdById,
   o.created_at AS created,
   @VAR('super_admin_id') AS modifiedById,

@@ -133,13 +133,13 @@ non_ror_affiliations AS (
   SELECT
     CONCAT('https://dmptool.org/affiliations/', nro.id) AS uri,
     'DMPTOOL' AS provenance,
-    nro.name AS name,
-    nro.name AS displayName,
-    CONCAT_WS(' | ', nro.name, nro.abbreviation, nro.target_url) AS searchName,
+    TRIM(nro.name) AS name,
+    TRIM(nro.name) AS displayName,
+    CONCAT_WS(' | ', TRIM(nro.name), TRIM(nro.abbreviation), TRIM(nro.target_url)) AS searchName,
     nro.org_type IN (2, 3, 6, 7) AS funder,
     NULL AS fundrefId,
-    nro.target_url AS homepage,
-    IF(nro.abbreviation IS NOT NULL, JSON_ARRAY(nro.abbreviation), JSON_ARRAY()) AS acronyms,
+    TRIM(nro.target_url) AS homepage,
+    IF(nro.abbreviation IS NOT NULL, JSON_ARRAY(TRIM(nro.abbreviation)), JSON_ARRAY()) AS acronyms,
     JSON_ARRAY() AS aliases,
     CASE
       WHEN nro.org_type = 2 THEN '["GOVERNMENT"]'
@@ -150,13 +150,13 @@ non_ror_affiliations AS (
       WHEN nro.org_type = 7 THEN '["EDUCATION", "GOVERNMENT", "OTHER"]'
       ELSE '["EDUCATION"]'
     END AS types,
-    nro.logo_uid AS logoURI,
-    nro.logo_name AS logoName,
-    nro.contact_name AS contactName,
-    nro.contact_email AS contactEmail,
-    nro.ssoEntityId,
+    TRIM(nro.logo_uid) AS logoURI,
+    TRIM(nro.logo_name) AS logoName,
+    TRIM(nro.contact_name) AS contactName,
+    TRIM(nro.contact_email) AS contactEmail,
+    TRIM(nro.ssoEntityId) AS ssoEntityId,
     nro.feedback_enabled AS feedbackEnabled,
-    nro.feedback_msg AS feedbackMessage,
+    TRIM(nro.feedback_msg) AS feedbackMessage,
     JSON_ARRAY() AS feedbackEmails,
     nro.managed,
     TRUE AS active,

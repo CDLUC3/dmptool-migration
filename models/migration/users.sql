@@ -36,19 +36,19 @@ MODEL (
 
 SELECT
   u.id,
-  u.firstname,
-  u.surname,
-  u.email,
+  TRIM(u.firstname) AS firstname,
+  TRIM(u.surname) AS surname,
+  TRIM(u.email) AS email,
   u.created_at,
   u.updated_at,
   u.accept_terms,
   u.active,
   u.last_sign_in_at,
   l.abbreviation AS language,
-  orc.value AS orcid,
-  sso.value AS sso_id,
+  TRIM(orc.value) AS orcid,
+  TRIM(sso.value) AS sso_id,
   false AS locked,
-  encrypted_password AS `password`,
+  TRIM(encrypted_password) AS `password`,
   CASE
     WHEN u.org_id IS NULL THEN NULL
     WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
