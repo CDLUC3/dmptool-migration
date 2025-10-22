@@ -30,32 +30,6 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY t.id ASC, links.link_order ASC) AS id,
-  tmplt.id AS versionedTemplateId,
-  'FUNDER' AS linkType,
-  TRIM(links.link) AS url,
-  CASE WHEN links.text IS NULL OR links.text = '' THEN TRIM(links.link) ELSE TRIM(links.text) END AS text,
-  @VAR('super_admin_id') AS createdById,
-  t.created_at AS created,
-  @VAR('super_admin_id') AS modifiedById,
-  t.updated_at AS modified
-FROM dmp.templates t
-  LEFT JOIN migration.versioned_templates tmplt
-    ON t.family_id = tmplt.old_family_id AND CONCAT('v', t.version) = tmplt.version
-  JOIN JSON_TABLE(
-    t.links,
-    '$.funder[*]'
-    COLUMNS(
-      link_order FOR ORDINALITY,
-      link VARCHAR(255) PATH '$.link',
-      text VARCHAR(255) PATH '$.text'
-    )
-  ) AS links
-WHERE t.customization_of IS NULL AND tmplt.id IS NOT NULL
-
-UNION ALL
-
-SELECT
   ROW_NUMBER() OVER (ORDER BY links.id ASC) AS id,
   vt.id AS versionedTemplateId,
   links.linkType,

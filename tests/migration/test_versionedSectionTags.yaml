@@ -1,0 +1,74 @@
+test_versionedSectionTags:
+  model: migration.versioned_section_tags
+
+  inputs:
+    intermediate.section_tags:
+      columns:
+        old_section_id: INT
+        tag_id: INT
+      rows:
+        - old_section_id: 11
+          tag_id: 1
+
+        - old_section_id: 22
+          tag_id: 1
+
+        - old_section_id: 22
+          tag_id: 4
+
+    migration.versioned_sections:
+      columns:
+        id: INT
+        old_section_id: INT
+        created: DATETIME
+        createdById: INT
+        modified: DATETIME
+        modifiedById: INT
+      rows:
+        - id: 900
+          old_section_id: 11
+          created: "2025-01-01 00:00:00"
+          createdById: 999
+          modified: "2025-01-02 00:00:00"
+          modifiedById: 999
+
+        - id: 901
+          old_section_id: 22
+          created: "2024-01-01 00:00:00"
+          createdById: 123
+          modified: "2024-01-02 00:00:00"
+          modifiedById: 456
+
+  outputs:
+    columns:
+      id: INT
+      versionedSectionId: INT
+      tagId: INT
+      created: DATETIME
+      createdById: INT
+      modified: DATETIME
+      modifiedById: INT
+    query:
+      - id: 1
+        versionedSectionId: 900
+        tagId: 1
+        created: "2025-01-01 00:00:00"
+        createdById: 999
+        modified: "2025-01-02 00:00:00"
+        modifiedById: 999
+
+      - id: 2
+        versionedSectionId: 901
+        tagId: 1
+        created: "2024-01-01 00:00:00"
+        createdById: 123
+        modified: "2024-01-02 00:00:00"
+        modifiedById: 456
+
+      - id: 3
+        versionedSectionId: 901
+        tagId: 4
+        created: "2024-01-01 00:00:00"
+        createdById: 123
+        modified: "2024-01-02 00:00:00"
+        modifiedById: 456

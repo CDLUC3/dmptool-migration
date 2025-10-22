@@ -1,0 +1,327 @@
+test_versionedQuestions:
+  model: migration.versioned_questions
+
+  inputs:
+    dmp.questions:
+      columns:
+        id: INT
+        question_format_id: INT
+        text: MEDIUMTEXT
+        number: INT
+        created_at: DATETIME
+        updated_at: DATETIME
+      rows:
+        - id: 111
+          question_format_id: 4 # Checkboxes
+          text: "Check all the colors that apply"
+          number: 4
+          created_at: "2023-01-01T00:00:00Z"
+          updated_at: "2023-01-02T00:00:00Z"
+
+        - id: 112
+          question_format_id: 99 # Unknown should default to textArea
+          text: "Describe it"
+          number: 9
+          created_at: "2023-01-02T00:00:00Z"
+          updated_at: "2023-01-03T00:00:00Z"
+
+        - id: 221
+          question_format_id: 3 # Radio buttons
+          text: "Are you sure?"
+          number: 2
+          created_at: "2024-01-01T00:00:00Z"
+          updated_at: "2024-01-02T00:00:00Z"
+
+        - id: 331
+          question_format_id: 1 # textArea
+          text: "Why are you sure?"
+          number: 1
+          created_at: "2025-05-01T00:00:00Z"
+          updated_at: "2025-05-02T00:00:00Z"
+
+        - id: 332
+          question_format_id: 2 # Text field
+          text: "What's your ORCID?"
+          number: 2
+          created_at: "2025-05-02T00:00:00Z"
+          updated_at: "2025-05-03T00:00:00Z"
+
+    dmp.question_options:
+      columns:
+        question_id: INT
+        number: INT
+        is_default: BOOLEAN
+        text: VARCHAR(255)
+      rows:
+        - question_id: 111
+          number: 1
+          is_default: 0
+          text: "Blue"
+
+        - question_id: 111
+          number: 2
+          is_default: 0
+          text: "Green"
+
+        - question_id: 221
+          number: 4
+          is_default: 0
+          text: "Option A"
+
+        - question_id: 221
+          number: 91
+          is_default: 1
+          text: "Option B"
+
+        - question_id: 221
+          number: 99
+          is_default: 0
+          text: "Option C"
+
+    dmp.annotations:
+      columns:
+        question_id: INT
+        type: INT
+        org_id: INT
+        text: MEDIUMTEXT
+      rows:
+        - question_id: 331
+          type: 0
+          org_id: 77777
+          text: "Sample Text A"
+
+        - question_id: 331
+          type: 0
+          org_id: 77777
+          text: "Sample Text B"
+
+        - question_id: 331
+          type: 0
+          org_id: 4444
+          text: "Ignored Sample Text"
+
+        - question_id: 111
+          type: 1
+          org_id: 55555
+          text: "Guidance Text A"
+
+        - question_id: 111
+          type: 1
+          org_id: 55555
+          text: "Guidance Text B"
+
+        - question_id: 111
+          type: 1
+          org_id: 4444
+          text: "Ignored Guidance Text"
+
+    intermediate.templates:
+      columns:
+        old_template_id: INT
+        old_org_id: INT
+      rows:
+        - old_template_id: 10
+          old_org_id: 55555
+
+        - old_template_id: 20
+          old_org_id: 77777
+
+    intermediate.sections:
+      columns:
+        old_template_id: INT
+        old_section_id: INT
+      rows:
+        - old_template_id: 10
+          old_section_id: 11
+
+        - old_template_id: 20
+          old_section_id: 22
+
+        - old_template_id: 20
+          old_section_id: 33
+
+    intermediate.questions:
+      columns:
+        old_section_id: INT
+        old_question_id: INT
+      rows:
+        - old_section_id: 11
+          old_question_id: 111
+
+        - old_section_id: 11
+          old_question_id: 112
+
+        - old_section_id: 22
+          old_question_id: 221
+
+        - old_section_id: 33
+          old_question_id: 331
+
+        - old_section_id: 33
+          old_question_id: 332
+
+    migration.versioned_sections:
+      columns:
+        id: INT
+        old_section_id: INT
+        sectionId: INT
+        createdById: INT
+        modifiedById: INT
+      rows:
+        - id: 1
+          old_section_id: 11
+          versionedTemplateId: 1
+          sectionId: 1
+          createdById: 999
+          modifiedById: 999
+
+        - id: 2
+          old_section_id: 22
+          versionedTemplateId: 1
+          sectionId: 2
+          createdById: 123
+          modifiedById: 456
+
+        - id: 3
+          old_section_id: 33
+          versionedTemplateId: 2
+          sectionId: 3
+          createdById: 123
+          modifiedById: 456
+
+    migration.questions:
+      columns:
+        id: INT
+        sectionId: INT
+        text: MEDIUMTEXT
+        old_display_order: INT
+        displayOrder: INT
+      rows:
+        - id: 1
+          sectionId: 1
+          text: "check all the colors that apply"
+          old_display_order: 4
+          displayOrder: 1
+
+        - id: 2
+          sectionId: 1
+          text: "describe it"
+          old_display_order: 9
+          displayOrder: 1
+
+        - id: 3
+          sectionId: 2
+          text: "are you sure?"
+          old_display_order: 2
+          displayOrder: 1
+
+        - id: 4
+          sectionId: 3
+          text: "why are you sure?"
+          old_display_order: 1
+          displayOrder: 1
+
+        - id: 5
+          sectionId: 3
+          text: "what's your orcid?"
+          old_display_order: 2
+          displayOrder: 2
+
+  outputs:
+    columns:
+      id: INT
+      old_question_id: INT
+      versionedTemplateId: INT
+      versionedSectionId: INT
+      questionId: INT
+      questionText: MEDIUMTEXT
+      sampleText: MEDIUMTEXT
+      guidanceText: MEDIUMTEXT
+      old_display_order: INT
+      displayOrder: INT
+      json: JSON
+      createdById: INT
+      created: DATETIME
+      modifiedById: INT
+      modified: DATETIME
+
+    query:
+      - id: 1
+        old_question_id: 111
+        versionedTemplateId: 1
+        versionedSectionId: 1
+        questionId: 1
+        questionText: "Check all the colors that apply"
+        sampleText: null
+        guidanceText: "Guidance Text A<br>Guidance Text B"
+        old_display_order: 4
+        displayOrder: 1
+        json: "{\"type\":\"checkBoxes\",\"options\":[{\"label\":\"Blue\",\"value\":\"Blue\",\"checked\":0},{\"label\":\"Green\",\"value\":\"Green\",\"checked\":0}],\"meta\":{\"schemaVersion\":\"1.0\"}}"
+        created: "2023-01-01 00:00:00"
+        createdById: 999
+        modified: "2023-01-02 00:00:00"
+        modifiedById: 999
+
+      - id: 2
+        old_question_id: 112
+        versionedTemplateId: 1
+        versionedSectionId: 1
+        questionId: 2
+        questionText: "Describe it"
+        sampleText: null
+        guidanceText: null
+        old_display_order: 9
+        displayOrder: 2
+        json: "{\"type\":\"textArea\",\"attributes\":{\"cols\":20,\"rows\":2,\"asRichText\":true},\"meta\":{\"schemaVersion\":\"1.0\"}}"
+        created: "2023-01-02 00:00:00"
+        createdById: 999
+        modified: "2023-01-03 00:00:00"
+        modifiedById: 999
+
+      - id: 3
+        old_question_id: 221
+        versionedTemplateId: 1
+        versionedSectionId: 2
+        questionId: 3
+        questionText: "Are you sure?"
+        sampleText: null
+        guidanceText: null
+        old_display_order: 2
+        displayOrder: 1
+        json: "{\"type\":\"radioButtons\",\"options\":[{\"label\":\"Option A\",\"value\":\"Option A\",\"selected\":0},{\"label\":\"Option B\",\"value\":\"Option B\",\"selected\":1},{\"label\":\"Option C\",\"value\":\"Option C\",\"selected\":0}],\"meta\":{\"schemaVersion\":\"1.0\"}}"
+        created: "2024-01-01 00:00:00"
+        createdById: 123
+        modified: "2024-01-02 00:00:00"
+        modifiedById: 456
+
+      - id: 4
+        old_question_id: 331
+        versionedTemplateId: 2
+        versionedSectionId: 3
+        questionId: 4
+        questionText: "Why are you sure?"
+        sampleText: "Sample Text A<br>Sample Text B"
+        guidanceText: null
+        old_display_order: 1
+        displayOrder: 1
+        json: "{\"type\":\"textArea\",\"attributes\":{\"cols\":20,\"rows\":2,\"asRichText\":true},\"meta\":{\"schemaVersion\":\"1.0\"}}"
+        created: "2025-05-01 00:00:00"
+        createdById: 123
+        modified: "2025-05-02 00:00:00"
+        modifiedById: 456
+
+      - id: 5
+        old_question_id: 332
+        versionedTemplateId: 2
+        versionedSectionId: 3
+        questionId: 5
+        questionText: "What's your ORCID?"
+        sampleText: null
+        guidanceText: null
+        old_display_order: 2
+        displayOrder: 2
+        json: "{\"type\":\"text\",\"attributes\":{\"pattern\":\"^.+$\",\"maxLength\":1000,\"minLength\":0},\"meta\":{\"schemaVersion\":\"1.0\"}}"
+        created: "2025-05-02 00:00:00"
+        createdById: 123
+        modified: "2025-05-03 00:00:00"
+        modifiedById: 456
