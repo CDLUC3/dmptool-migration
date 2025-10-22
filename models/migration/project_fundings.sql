@@ -22,7 +22,7 @@ SELECT
   p.id AS projectId,
   p.funder_id AS affiliationId,
   p.funding_status AS status,
-  NULL AS funderProjectNumber, -- TODO: not sure about the mapping for this field
+  NULL AS funderProjectNumber,
   p.grant_id AS grantId,
   p.grant_number AS funderOpportunityNumber,
   u.id AS createdById,

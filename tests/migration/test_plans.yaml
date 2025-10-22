@@ -43,6 +43,8 @@ test_plans:
 
   outputs:
     query:
+      columns:
+        registeredById: INT
       rows:
         - id: 1
           projectId: 1
@@ -52,7 +54,7 @@ test_plans:
           status: "COMPLETE"
           dmpId: "https://doi.org/10.48321/D1ABC12"
           registeredById: 1
-          registered: "2024-01-01 00:00:00"
+          registered: "2024-01-02 00:00:00"
           languageId: "en-US"
           featured: 1
           createdById: 1
@@ -67,8 +69,8 @@ test_plans:
           visibility: "PRIVATE"
           status: "DRAFT"
           dmpId: NULL
-          registeredById: 2
-          registered: "2025-01-01 00:00:00"
+          registeredById: NULL
+          registered: NULL
           languageId: "pt-BR"
           featured: 0
           createdById: 2

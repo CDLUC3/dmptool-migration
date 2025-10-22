@@ -29,8 +29,8 @@ SELECT
   p.visibility,
   p.status,
   p.dmp_id AS dmpId,
-  u.id AS registeredById,
-  p.created_at AS registered, -- TODO: this was registered_at but that field doesn't exist
+  CASE WHEN p.dmp_id IS NOT NULL THEN u.id ELSE NULL END AS registeredById,
+  CASE WHEN p.dmp_id IS NOT NULL THEN p.updated_at ELSE NULL END AS registered,
   p.language AS languageId,
   p.featured AS featured,
   u.id AS createdById,
