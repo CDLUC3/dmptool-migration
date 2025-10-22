@@ -1,0 +1,79 @@
+test_plans:
+  model: migration.plans
+  vars:
+    execution_time: "2025-10-01 00:00:00"
+
+  inputs:
+    intermediate.plans:
+      rows:
+        - id: 1
+          template_id: 1
+          title: "Plan 1"
+          visibility: "PUBLIC"
+          status: "COMPLETE"
+          dmp_id: "https://doi.org/10.48321/D1ABC12"
+          language: "en-US"
+          featured: 1
+          owner_email: "owner1@example.com"
+          created_at: "2024-01-01 00:00:00"
+          updated_at: "2024-01-02 00:00:00"
+        - id: 2
+          template_id: 1
+          title: "Plan 2"
+          visibility: "PRIVATE"
+          status: "DRAFT"
+          dmp_id: NULL
+          language: "pt-BR"
+          featured: 0
+          owner_email: "owner2@example.com"
+          created_at: "2025-01-01 00:00:00"
+          updated_at: "2025-01-02 00:00:00"
+
+    intermediate.users:
+      rows:
+        - id: 1
+          email: "owner1@example.com"
+        - id: 2
+          email: "owner2@example.com"
+
+    intermediate.template_mappings:
+      rows:
+        - old_template_id: 1
+          new_versioned_template_id: 2
+
+  outputs:
+    query:
+      columns:
+        registeredById: INT
+      rows:
+        - id: 1
+          projectId: 1
+          versionedTemplateId: 2
+          title: "Plan 1"
+          visibility: "PUBLIC"
+          status: "COMPLETE"
+          dmpId: "https://doi.org/10.48321/D1ABC12"
+          registeredById: 1
+          registered: "2024-01-02 00:00:00"
+          languageId: "en-US"
+          featured: 1
+          createdById: 1
+          created: "2024-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2024-01-02 00:00:00"
+
+        - id: 2
+          projectId: 2
+          versionedTemplateId: 2
+          title: "Plan 2"
+          visibility: "PRIVATE"
+          status: "DRAFT"
+          dmpId: NULL
+          registeredById: NULL
+          registered: NULL
+          languageId: "pt-BR"
+          featured: 0
+          createdById: 2
+          created: "2025-01-01 00:00:00"
+          modifiedById: 2
+          modified: "2025-01-02 00:00:00"

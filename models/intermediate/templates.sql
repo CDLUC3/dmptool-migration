@@ -26,12 +26,12 @@ WITH org_creator AS (
     COALESCE(mu.id, @VAR('super_admin_id')) AS user_id
   FROM dmp.users AS u
     INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
-      LEFT JOIN migration.users AS mu ON u.email = mu.email
+      LEFT JOIN intermediate.users AS mu ON u.email = mu.email
   WHERE u.org_id IS NOT NULL
   QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
-)
+),
 
-WITH current_ids AS (
+current_ids AS (
   SELECT t.family_id, MAX(t.id) AS current_id
   FROM dmp.templates AS t
   GROUP BY t.family_id

@@ -1,4 +1,4 @@
-test_affiliationEmailDomains:
+test_affiliation_email_domains:
   model: migration.affiliation_email_domains
   vars:
     execution_time: "2025-10-01 00:00:00+00:00"
