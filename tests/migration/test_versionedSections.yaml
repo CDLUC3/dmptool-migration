@@ -1,10 +1,71 @@
-test_sections:
-  model: migration.sections
+test_versioned_sections:
+  model: migration.versioned_sections
 
   inputs:
+    migration.versioned_templates:
+      columns:
+        id: INT
+        template_id: INT
+        old_template_id: INT
+        bestPractice: BOOLEAN
+        createdById: INT
+        modifiedById: INT
+      rows:
+        - id: 1
+          template_id: 900
+          old_template_id: 9999
+          bestPractice: true
+          createdById: 999
+          modifiedById: 999
+
+        - id: 2
+          template_id: 901
+          old_template_id: 8888
+          bestPractice: false
+          createdById: 123
+          modifiedById: 456
+
+    migration.sections:
+      columns:
+        id: INT
+        templateId: INT
+        name: VARCHAR(255)
+        old_display_order: INT
+        displayOrder: INT
+      rows:
+        - id: 1
+          templateId: 900
+          name: "Section one"
+          old_display_order: 99
+          displayOrder: 1
+
+        - id: 2
+          templateId: 901
+          name: "Section A"
+          old_display_order: 2
+          displayOrder: 1
+
+        - id: 3
+          templateId: 901
+          name: "Section B"
+          old_display_order: 3
+          displayOrder: 2
+
+    dmp.phases:
+      columns:
+        id: INT
+        template_id: INT
+      rows:
+        - id: 44
+          template_id: 9999
+
+        - id: 55
+          template_id: 8888
+
     dmp.sections:
       columns:
         id: INT
+        phase_id: INT
         title: VARCHAR(255)
         description: MEDIUMTEXT
         number: INT
@@ -12,6 +73,7 @@ test_sections:
         updated_at: DATETIME
       rows:
         - id: 11
+          phase_id: 44
           title: "Section one"
           description: "Overview of the project"
           number: 99
@@ -19,6 +81,7 @@ test_sections:
           updated_at: "2023-01-02T00:00:00Z"
 
         - id: 22
+          phase_id: 55
           title: "Section A"
           description: "Details of project"
           number: 2
@@ -26,6 +89,7 @@ test_sections:
           updated_at: "2024-01-02T00:00:00Z"
 
         - id: 33
+          phase_id: 55
           title: "Section B"
           description: "More details"
           number: 3
@@ -46,82 +110,58 @@ test_sections:
         - old_template_id: 20
           old_section_id: 33
 
-    migration.templates:
-      columns:
-        id: INT
-        old_template_id: INT
-        bestPractice: BOOLEAN
-        isDirty: BOOLEAN
-        createdById: INT
-        modifiedById: INT
-      rows:
-        - id: 900
-          old_template_id: 10
-          bestPractice: true
-          isDirty: false
-          createdById: 999
-          modifiedById: 999
-
-        - id: 901
-          old_template_id: 20
-          bestPractice: false
-          isDirty: true
-          createdById: 123
-          modifiedById: 456
-
   outputs:
     columns:
       id: INT
       old_section_id: INT
-      templateId: INT
+      versionedTemplateId: INT
       name: VARCHAR(255)
       introduction: MEDIUMTEXT
       old_display_order: INT
       displayOrder: INT
       bestPractice: BOOLEAN
-      isDirty: BOOLEAN
       created: DATETIME
       createdById: INT
       modified: DATETIME
       modifiedById: INT
     query:
       - id: 1
+        versionedTemplateId: 1
         old_section_id: 11
-        templateId: 900
+        sectionId: 1
         name: "Section one"
         introduction: "Overview of the project"
         old_display_order: 99
         displayOrder: 1
         bestPractice: true
-        isDirty: false
         created: "2023-01-01 00:00:00"
         createdById: 999
         modified: "2023-01-02 00:00:00"
         modifiedById: 999
 
       - id: 2
+        versionedTemplateId: 2
         old_section_id: 22
-        templateId: 901
+        sectionId: 2
         name: "Section A"
         introduction: "Details of project"
         old_display_order: 2
         displayOrder: 1
         bestPractice: false
-        isDirty: true
         created: "2024-01-01 00:00:00"
         createdById: 123
         modified: "2024-01-02 00:00:00"
         modifiedById: 456
 
       - id: 3
+        versionedTemplateId: 2
         old_section_id: 33
-        templateId: 901
+        sectionId: 3
         name: "Section B"
         introduction: "More details"
         old_display_order: 3
         displayOrder: 2
         bestPractice: false
-        isDirty: true
         created: "2025-05-01 00:00:00"
         createdById: 123
         modified: "2025-05-02 00:00:00"

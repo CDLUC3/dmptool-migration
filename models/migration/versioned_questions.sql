@@ -29,6 +29,7 @@ MODEL (
     json JSON,
     guidanceText MEDIUMTEXT NOT NULL,
     sampleText MEDIUMTEXT NOT NULL,
+    old_display_order INT NOT NULL,
     displayOrder INT NOT NULL,
     created TIMESTAMP NOT NULL,
     createdById INT,
@@ -189,6 +190,7 @@ SELECT
       ELSE
         '{"type":"textArea","attributes":{"cols":20,"rows":2,"asRichText":true},"meta":{"schemaVersion":"1.0"}}'
     END AS json,
+    vq.number AS old_display_order,
     ROW_NUMBER() OVER (PARTITION BY vs.id ORDER BY vq.number ASC) AS displayOrder,
     vq.created_at AS created,
     vs.createdById,
