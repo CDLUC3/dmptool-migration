@@ -1,0 +1,135 @@
+test_template_customizations:
+  model: migration.template_customizations
+
+  inputs:
+    dmp.registry_orgs:
+      columns:
+        id: INT
+        org_id: INT
+        ror_id: VARCHAR(255)
+      rows:
+        - id: 1
+          org_id: 2
+          ror_id: "https://ror.org/xxxxxxxx"
+
+    published_templates:
+      columns:
+        family_id: INT
+        old_template_id: INT
+        is_published: BOOLEAN
+      rows:
+        - family_id: 12345
+          old_template_id: 2
+          is_published: true
+
+        - family_id: 67890
+          old_template_id: 4
+          is_published: true
+
+    intermediate.templates:
+      columns:
+        family_id: INT
+        old_template_id: INT
+        old_org_id: INT
+        is_current_template: BOOLEAN
+        customization_of_family_id: INT
+        is_published: BOOLEAN
+        was_published: BOOLEAN
+        old_created_at: DATETIME
+        old_updated_at: DATETIME
+        new_created_by_id: INT
+      rows:
+        - family_id: 99999
+          old_template_id: 99
+          old_org_id: 1
+          is_current_template: 1
+          customization_of_family_id: 12345
+          is_published: 1
+          was_published: 0
+          old_created_at: "2025-01-01 01:14:14"
+          old_updated_at: "2025-01-02 11:33:17"
+          new_created_by_id: 999
+
+        - family_id: 88888
+          old_template_id: 88
+          old_org_id: 2
+          is_current_template: 1
+          customization_of_family_id: 67890
+          is_published: 0
+          was_published: 0
+          old_created_at: "2025-01-02 01:14:14"
+          old_updated_at: "2025-01-03 11:33:17"
+          new_created_by_id: 777
+
+        - family_id: 88888
+          old_template_id: 87
+          old_org_id: 2
+          is_current_template: 0
+          customization_of_family_id: 67890
+          is_published: 1
+          was_published: 0
+          old_created_at: "2024-01-01 01:14:14"
+          old_updated_at: "2024-01-02 11:33:17"
+          new_created_by_id: 777
+
+        - family_id: 77777
+          old_template_id: 77
+          old_org_id: 3
+          is_current_template: 1
+          customization_of_family_id: 54321
+          is_published: 1
+          was_published: 0
+          old_created_at: "2025-01-03 01:14:14"
+          old_updated_at: "2025-01-04 11:33:17"
+          new_created_by_id: 555
+
+  outputs:
+    columns:
+      id: INT
+      old_family_id: INT
+      old_template_id: INT
+      old_customization_of: INT
+      affiliationId: VARCHAR(255)
+      status: VARCHAR(16)
+      migrationStatus: VARCHAR(16)
+      created: DATETIME
+      createdById: INT
+      modified: DATETIME
+      modifiedById: INT
+    query:
+      rows:
+        - id: 1
+          old_template_id: 99
+          old_family_id: 99999
+          old_customization_of: 12345
+          affiliationId: "https://dmptool.org/affiliations/1"
+          status: "PUBLISHED"
+          migrationStatus: "STALE"
+          created: "2025-01-01 01:14:14"
+          createdById: 999
+          modified: "2025-01-02 11:33:17"
+          modifiedById: 999
+
+        - id: 2
+          old_template_id: 88
+          old_family_id: 88888
+          old_customization_of: 67890
+          affiliationId: "https://ror.org/xxxxxxxx"
+          status: "DRAFT"
+          migrationStatus: "STALE"
+          created: "2025-01-02 01:14:14"
+          createdById: 777
+          modified: "2025-01-03 11:33:17 "
+          modifiedById: 777
+
+        - id: 3
+          old_template_id: 77
+          old_family_id: 77777
+          old_customization_of: 54321
+          affiliationId: "https://dmptool.org/affiliations/3"
+          status: "PUBLISHED"
+          migrationStatus: "ORPHANED"
+          created: "2025-01-03 01:14:14"
+          createdById: 555
+          modified: "2025-01-04 11:33:17 "
+          modifiedById: 555
