@@ -58,6 +58,13 @@ AUDIT (name dmptool_only_one_active_version_per_template);
   GROUP BY template_id
   HAVING COUNT(*) > 1;
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
   ROW_NUMBER() OVER (ORDER BY vt.created_at ASC) AS id,
   vt.family_id AS old_family_id,
@@ -66,34 +73,34 @@ SELECT
   (intt.is_published) AS active,
   CONCAT('v', vt.version) AS version,
   'PUBLISHED' AS versionType,
-  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS versionedById,
+  COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS versionedById,
   NULL AS comment,
   TRIM(vt.title) AS name,
   TRIM(vt.description) AS description,
   CASE
     WHEN vt.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', vt.org_id)
+    WHEN ro.id IS NULL THEN CONCAT('https://migration.org/affiliations/', vt.org_id)
     ELSE ro.ror_id
   END AS ownerId,
   CASE WHEN vt.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS visibility,
   (vt.is_default = 1) AS bestPractice,
   CASE
-    WHEN vt.locale IN ('pt', 'pt-BR') OR vt.family_id IN (SELECT pt.family_id FROM migration.templates_pt_br AS pt) THEN 'pt-BR'
+    WHEN vt.locale IN ('pt', 'pt-BR') OR vt.family_id IN (SELECT pt.family_id FROM intermediate.templates_pt_br AS pt) THEN 'pt-BR'
     ELSE 'en-US'
   END AS languageId,
-  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS createdById,
+  COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS createdById,
   vt.created_at AS created,
-  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS modifiedById,
+  COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS modifiedById,
   vt.updated_at AS modified
-FROM dmp.templates AS vt
+FROM source_db.templates AS vt
   JOIN migration.templates AS t ON vt.family_id = t.old_family_id
   JOIN intermediate.templates AS intt ON vt.id = intt.old_template_id
-    LEFT JOIN dmp.registry_orgs AS ro ON vt.org_id = ro.org_id
+    LEFT JOIN source_db.registry_orgs AS ro ON vt.org_id = ro.org_id
 WHERE vt.customization_of IS NULL AND (intt.is_published OR intt.was_published)
 ORDER BY vt.created_at ASC;
 
 -- Reconciliation queries:
 -- SELECT COUNT(id) FROM migration.versioned_templates; #948
 --
--- SELECT COUNT(DISTINCT t.id) FROM dmp.templates t WHERE t.customization_of IS NULL AND (t.published = 1
---   OR t.id != (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #948
+-- SELECT COUNT(DISTINCT t.id) FROM source_db.templates t WHERE t.customization_of IS NULL AND (t.published = 1
+--   OR t.id != (SELECT MAX(tmplt.id) FROM source_db.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #948

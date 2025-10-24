@@ -1,7 +1,7 @@
 --   Seed data to tell us which templates are in pt-BR
 
 MODEL (
-  name migration.templates_pt_br,
+  name intermediate.templates_pt_br,
   kind SEED (
     path '../../seeds/templates_pt_br.csv'
   ),

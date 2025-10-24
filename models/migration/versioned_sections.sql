@@ -62,8 +62,8 @@ SELECT
   vt.createdById,
   vs.updated_at AS modified,
   vt.modifiedById
-FROM dmp.sections AS vs
-  JOIN dmp.phases AS p ON vs.phase_id = p.id
+FROM source_db.sections AS vs
+  JOIN source_db.phases AS p ON vs.phase_id = p.id
   JOIN intermediate.sections AS ints ON vs.id = ints.old_section_id
   JOIN migration.versioned_templates AS vt ON p.template_id = vt.old_template_id
     JOIN root_sections AS rs ON vt.template_id = rs.templateId
@@ -74,6 +74,6 @@ ORDER BY vs.created_at ASC;
 -- Reconciliation queries:
 -- SELECT COUNT(id) from migration.versioned_sections; #6,862
 --
--- SELECT COUNT(DISTINCT s.id) FROM dmp.templates t INNER JOIN dmp.phases p ON t.id = p.template_id
--- 	INNER JOIN dmp.sections s ON p.id = s.phase_id WHERE t.customization_of IS NULL AND (t.published = 1
---   OR t.id != (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #6,261
+-- SELECT COUNT(DISTINCT s.id) FROM source_db.templates t INNER JOIN source_db.phases p ON t.id = p.template_id
+-- 	INNER JOIN source_db.sections s ON p.id = s.phase_id WHERE t.customization_of IS NULL AND (t.published = 1
+--   OR t.id != (SELECT MAX(tmplt.id) FROM source_db.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #6,261

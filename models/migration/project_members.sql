@@ -19,7 +19,7 @@ MODEL (
 );
 
 SELECT
-  u.id,
+  ROW_NUMBER() OVER () AS id,
   p.id AS projectId,
   u.org_id AS affiliationId,
   u.firstname AS givenName,

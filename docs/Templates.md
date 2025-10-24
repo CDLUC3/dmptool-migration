@@ -67,7 +67,7 @@ SELECT templates.family_id, templates.id, templates.title, templates.description
   CASE WHEN templates.published = 1 THEN templates.updated_at ELSE NULL END AS published_at,
   CASE 
   WHEN templates.org_id IS NULL THEN NULL
-  WHEN registry_orgs.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', orgs.id) 
+  WHEN registry_orgs.id IS NULL THEN CONCAT('https://migration.org/affiliations/', orgs.id) 
   ELSE registry_orgs.ror_id 
   END AS owner_id,
   (SELECT users.email
@@ -130,7 +130,7 @@ SELECT vt.family_id, vt.id, vt.title, vt.description, vt.links,
   vt.updated_at AS published_at,
   CASE 
   WHEN vt.org_id IS NULL THEN NULL
-  WHEN registry_orgs.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', orgs.id) 
+  WHEN registry_orgs.id IS NULL THEN CONCAT('https://migration.org/affiliations/', orgs.id) 
   ELSE registry_orgs.ror_id 
   END AS owner_id,
   (SELECT users.email
@@ -195,7 +195,7 @@ We can use the following query to find the data for the `templateCustomizations`
 SELECT ct.customization_of AS family_id, ct.org_id,
   CASE 
   WHEN ct.org_id IS NULL THEN NULL
-  WHEN registry_orgs.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', orgs.id) 
+  WHEN registry_orgs.id IS NULL THEN CONCAT('https://migration.org/affiliations/', orgs.id) 
   ELSE registry_orgs.ror_id 
   END AS owner_id,
   CASE WHEN ct.published = 1 THEN CONCAT('v', ct.version) ELSE NULL END AS current_version,

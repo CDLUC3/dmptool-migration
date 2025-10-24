@@ -1,6 +1,31 @@
 # dmptool-migration
 SQLMesh code to facilitate data migration from the old Rails DMP Tool to the new JS system
 
+SQLMesh requires that your source database and target database reside on the same server. If you need to move your source database to the same server as your target database, you can use `mysqldump` and `mysql` to export and import the database.
+For example:
+```shell
+# Dump the source database
+mysqldump -h [host] -P [port] -u [username] -p [database] \
+  --single-transaction --quick --skip-lock-tables --lock-tables=false --set-gtid-purged=OFF \
+  --tables annotations departments identifiers languages plans orgs phases question_options questions questions_themes registry_orgs research_domains roles sections templates themes users users_perms \
+  > ~/source_db.sql
+
+# Dump the ROR data
+mysqldump -h [host] -P [port] -u [username] -p migration \
+  --single-transaction --quick --skip-lock-tables --lock-tables=false --set-gtid-purged=OFF \
+  --tables ror_staging \
+  > ~/ror_staging.sql
+
+# Create the target database on the new server
+mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE source_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Import the ROR data into the new server
+mysql -u [username] -p -P [port] -h [host] source_db < ~/ror_staging.sql
+
+# Import the source database dump into the new server
+mysql -u [username] -p -P [port] -h [host] source_db < ~/source_db.sql
+```
+
 ## Requirements
 * Python 3.12
 
@@ -162,6 +187,7 @@ SET @schema_name = 'migration';
 SELECT 
   CONCAT(
     'CREATE TABLE ',
+    '`', @schema_name, '`.',
     '`', TABLE_NAME, '_data`',
     ' AS SELECT * FROM `', @schema_name, '`.`', TABLE_NAME, '`;'
   ) AS create_table_sql
@@ -184,6 +210,11 @@ TABLES=$(mysql -u [username] -p -h [host] -P [port] -Nse \
 mysqldump -u [username] -p -P [port] -h [host] \
   --single-transaction --quick --skip-lock-tables --lock-tables=false --set-gtid-purged=OFF 
   $SCHEMA $TABLES > ~/migration.sql
+```
+
+You may need to create the new database first in the target system:
+```bash
+mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE migration CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
 Then load the dump into the target system database:

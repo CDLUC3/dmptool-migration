@@ -65,11 +65,11 @@ SELECT
     rq.questionId AS questionId,
     TRIM(vq.text) AS questionText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
-     FROM dmp.annotations a
+     FROM source_db.annotations a
      WHERE a.question_id = vq.id AND a.org_id = intt.old_org_id AND a.type = 0
     ) AS sampleText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
-     FROM dmp.annotations a
+     FROM source_db.annotations a
      WHERE a.question_id = vq.id AND a.org_id = intt.old_org_id AND a.type = 1
     ) AS guidanceText,
     CASE vq.question_format_id
@@ -196,8 +196,8 @@ SELECT
     vs.createdById,
     vq.updated_at AS modified,
     vs.modifiedById
-FROM dmp.questions AS vq
-  LEFT JOIN dmp.question_options AS qo ON vq.id = qo.question_id
+FROM source_db.questions AS vq
+  LEFT JOIN source_db.question_options AS qo ON vq.id = qo.question_id
   JOIN intermediate.questions AS intq ON vq.id = intq.old_question_id
     JOIN intermediate.sections AS ints ON ints.old_section_id = intq.old_section_id
       JOIN intermediate.templates AS intt ON ints.old_template_id = intt.old_template_id

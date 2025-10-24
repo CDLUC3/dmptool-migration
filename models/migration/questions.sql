@@ -55,11 +55,11 @@ SELECT
   s.id AS sectionId,
   TRIM(q.text) AS questionText,
   (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
-   FROM dmp.annotations a
+   FROM source_db.annotations a
    WHERE a.question_id = q.id AND a.org_id = intt.old_org_id AND a.type = 0
   ) AS sampleText,
   (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
-   FROM dmp.annotations a
+   FROM source_db.annotations a
    WHERE a.question_id = q.id AND a.org_id = intt.old_org_id AND a.type = 1
   ) AS guidanceText,
   q.number AS old_display_order,
@@ -187,8 +187,8 @@ SELECT
   q.created_at AS created,
   t.modifiedById,
   q.updated_at AS modified
-FROM dmp.questions AS q
-  LEFT JOIN dmp.question_options AS qo ON q.id = qo.question_id
+FROM source_db.questions AS q
+  LEFT JOIN source_db.question_options AS qo ON q.id = qo.question_id
   JOIN intermediate.questions AS intq ON q.id = intq.old_question_id
     JOIN intermediate.sections AS ints ON intq.old_section_id = ints.old_section_id
       JOIN migration.sections AS s ON ints.old_section_id = s.old_section_id

@@ -20,12 +20,19 @@ MODEL (
   )
 );
 
-WITH org_creator AS (
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+),
+
+org_creator AS (
   SELECT
     u.org_id,
-    COALESCE(mu.id, @VAR('super_admin_id')) AS user_id
-  FROM dmp.users AS u
-    INNER JOIN dmp.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
+    COALESCE(mu.id, (SELECT id FROM default_super_admin)) AS user_id
+  FROM source_db.users AS u
+    INNER JOIN source_db.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
       LEFT JOIN intermediate.users AS mu ON u.email = mu.email
   WHERE u.org_id IS NOT NULL
   QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
@@ -33,7 +40,7 @@ WITH org_creator AS (
 
 current_ids AS (
   SELECT t.family_id, MAX(t.id) AS current_id
-  FROM dmp.templates AS t
+  FROM source_db.templates AS t
   GROUP BY t.family_id
 )
 
@@ -58,5 +65,5 @@ SELECT
             FROM current_ids AS ci
             WHERE ci.family_id = t.family_id)) AS is_current_template,
   oc.user_id AS new_created_by_id
-FROM dmp.templates t
+FROM source_db.templates t
   LEFT JOIN org_creator oc ON t.org_id = oc.org_id

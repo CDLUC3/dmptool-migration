@@ -29,13 +29,14 @@ MODEL (
   name intermediate.users,
   kind FULL,
   audits (
-    assert_row_count(dmp_table:='users', blocking := false),
+    -- assert_row_count(dmp_table:='users', blocking := false),
+    unique_values(columns := (id, email, sso_id), blocking := false),
   ),
   enabled true
 );
 
 SELECT
-  u.id,
+  ROW_NUMBER() OVER (ORDER BY u.created_at ASC) AS id,
   TRIM(u.firstname) AS firstname,
   TRIM(u.surname) AS surname,
   TRIM(u.email) AS email,
@@ -55,13 +56,34 @@ SELECT
     ELSE ro.ror_id
   END AS org_id,
   CASE
-    WHEN (SELECT up.perm_id FROM dmp.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
-    WHEN (SELECT COUNT(up.perm_id) FROM dmp.users_perms AS up WHERE up.user_id = u.id AND up.perm_id != 10) THEN 'ADMIN'
+    WHEN (SELECT up.perm_id FROM source_db.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
+    WHEN (SELECT COUNT(up.perm_id) FROM source_db.users_perms AS up WHERE up.user_id = u.id AND up.perm_id != 10) THEN 'ADMIN'
     ELSE 'RESEARCHER'
   END AS role
-FROM dmp.users AS u
-  LEFT JOIN dmp.languages AS l ON u.language_id = l.id
-  INNER JOIN dmp.orgs AS o ON u.org_id = o.id
-  	LEFT JOIN dmp.registry_orgs AS ro ON o.id = ro.org_id
-  LEFT JOIN dmp.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
-  LEFT JOIN dmp.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2;
+FROM source_db.users AS u
+  LEFT JOIN source_db.languages AS l ON u.language_id = l.id
+  INNER JOIN source_db.orgs AS o ON u.org_id = o.id
+  	LEFT JOIN source_db.registry_orgs AS ro ON o.id = ro.org_id
+  LEFT JOIN source_db.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
+  LEFT JOIN source_db.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2
+
+UNION
+
+SELECT
+  1 + (SELECT MAX(id) FROM source_db.users) AS id,
+  'Super' AS firstname,
+  'Admin' AS surname,
+  'super@example.com' AS email,
+  CURRENT_DATE() AS created_at,
+  CURRENT_DATE() AS updated_at,
+  true AS accept_terms,
+  true AS active,
+  NULL AS last_sign_in_at,
+  'en-US' AS language,
+  NULL AS orcid,
+  NULL AS sso_id,
+  false AS locked,
+  '$2a$10$f3wCBdUVt/2aMcPOb.GX1OBO9WMGxDXx5HKeSBBnrMhat4.pis4Pe' AS `password`,
+  'https://ror.org/03yrm5c26' AS org_id,
+  'SUPERADMIN' AS role
+FROM source_db.users;

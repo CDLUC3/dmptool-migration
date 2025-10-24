@@ -32,28 +32,28 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
-    uri VARCHAR(255) NOT NULL,
-    provenance VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    displayName VARCHAR(255) NOT NULL,
-    searchName VARCHAR(255),
+    uri VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    provenance VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    name VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    displayName VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    searchName VARCHAR(512) COLLATE utf8mb4_unicode_ci ,
     funder BOOLEAN NOT NULL DEFAULT 0,
-    fundrefId VARCHAR(255),
-    homepage VARCHAR(255),
-    acronyms JSON,
-    aliases JSON,
-    types JSON,
-    logoURI VARCHAR(255),
-    logoName VARCHAR(255),
-    contactName VARCHAR(255),
-    contactEmail VARCHAR(255),
-    ssoEntityId VARCHAR(255),
+    fundrefId VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    homepage VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    acronyms JSON COLLATE utf8mb4_unicode_ci ,
+    aliases JSON COLLATE utf8mb4_unicode_ci ,
+    types JSON COLLATE utf8mb4_unicode_ci ,
+    logoURI VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    logoName VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    contactName VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    contactEmail VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    ssoEntityId VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
     feedbackEnabled BOOLEAN NOT NULL DEFAULT 0,
-    feedbackMessage TEXT,
-    feedbackEmails JSON,
+    feedbackMessage TEXT COLLATE utf8mb4_unicode_ci ,
+    feedbackEmails JSON COLLATE utf8mb4_unicode_ci ,
     managed BOOLEAN NOT NULL DEFAULT 0,
     active BOOLEAN NOT NULL DEFAULT 1,
-    apiTarget VARCHAR(255),
+    apiTarget VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
     createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
@@ -65,7 +65,14 @@ MODEL (
   enabled true
 );
 
-WITH ror_orgs AS (
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+),
+
+ror_orgs AS (
   SELECT
     ro.org_id,
     ro.ror_id,
@@ -79,9 +86,9 @@ WITH ror_orgs AS (
     o.feedback_enabled,
     o.feedback_msg,
     o.links
-  FROM dmp.registry_orgs ro
-  INNER JOIN dmp.orgs o ON ro.org_id = o.id
-  LEFT JOIN dmp.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
+  FROM source_db.registry_orgs ro
+  INNER JOIN source_db.orgs o ON ro.org_id = o.id
+  LEFT JOIN source_db.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
   WHERE ro.org_id IS NOT NULL -- Selects only ROR records we are using
 ),
 
@@ -89,9 +96,9 @@ non_ror_orgs AS (
   SELECT
     o.*,
     i.value AS ssoEntityId
-  FROM dmp.orgs o
-  LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
-  LEFT JOIN dmp.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
+  FROM source_db.orgs o
+  LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id
+  LEFT JOIN source_db.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
   WHERE ro.id IS NULL -- Where no ROR org was mapped to orgs table
 ),
 
@@ -102,7 +109,7 @@ ror_affiliations AS (
     rs.provenance AS provenance,
     rs.name AS name,
     rs.displayName AS displayName,
-    rs.searchName AS searchName,
+    SUBSTRING(rs.searchName, 1, 512) AS searchName,
     IF(rs.funder=1, TRUE, FALSE) AS funder,
     rs.fundrefId AS fundrefId,
     rs.homepage AS homepage,
@@ -120,12 +127,12 @@ ror_affiliations AS (
     ro.managed,
     TRUE AS active,
     ro.api_target AS apiTarget,
-    @VAR('super_admin_id') AS createdById,
+    (SELECT id FROM default_super_admin) AS createdById,
     CURRENT_TIMESTAMP AS created,
-    @VAR('super_admin_id') AS modifiedById,
+    (SELECT id FROM default_super_admin) AS modifiedById,
     CURRENT_TIMESTAMP AS modified
-  FROM migration.ror_staging rs
-  INNER JOIN ror_orgs ro ON rs.uri = ro.ror_id -- Selects only ROR records we are using
+  FROM source_db.ror_staging rs
+    LEFT JOIN ror_orgs ro ON rs.uri = ro.ror_id
 ),
 
 -- Non ROR based affiliations
@@ -135,7 +142,7 @@ non_ror_affiliations AS (
     'DMPTOOL' AS provenance,
     TRIM(nro.name) AS name,
     TRIM(nro.name) AS displayName,
-    CONCAT_WS(' | ', TRIM(nro.name), TRIM(nro.abbreviation), TRIM(nro.target_url)) AS searchName,
+    SUBSTRING(CONCAT_WS(' | ', TRIM(nro.name), TRIM(nro.abbreviation), TRIM(nro.target_url)), 1, 512) AS searchName,
     nro.org_type IN (2, 3, 6, 7) AS funder,
     NULL AS fundrefId,
     TRIM(nro.target_url) AS homepage,
@@ -161,19 +168,26 @@ non_ror_affiliations AS (
     nro.managed,
     TRUE AS active,
     NULL AS apiTarget,
-    @VAR('super_admin_id') AS createdById,
+    (SELECT id FROM default_super_admin) AS createdById,
     CAST(nro.created_at AS TIMESTAMP) AS created,
-    @VAR('super_admin_id') AS modifiedById,
+    (SELECT id FROM default_super_admin) AS modifiedById,
     CAST(nro.updated_at AS TIMESTAMP) AS modified
   FROM non_ror_orgs nro
 )
 
 -- Build final table
 SELECT
-  ROW_NUMBER() OVER () AS id,
+  ROW_NUMBER() OVER (ORDER BY a.modified ASC) AS id,
   a.*
 FROM (
   SELECT * FROM ror_affiliations
+
   UNION ALL
+
   SELECT * FROM non_ror_affiliations
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM ror_affiliations ra
+    WHERE LOWER(ra.displayName) = LOWER(TRIM(non_ror_affiliations.name))
+  )
 ) AS a;

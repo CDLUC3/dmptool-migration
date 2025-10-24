@@ -25,7 +25,14 @@ MODEL (
   enabled true
 );
 
-WITH email_domains AS (
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+),
+
+email_domains AS (
   SELECT
     CASE
       WHEN ro.org_id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
@@ -36,12 +43,12 @@ WITH email_domains AS (
       '^www\\.',
       ''
     )) AS emailDomain,
-    @VAR('super_admin_id') AS createdById,
+    (SELECT id FROM default_super_admin) AS createdById,
     o.created_at AS created,
-    @VAR('super_admin_id') AS modifiedById,
+    (SELECT id FROM default_super_admin) AS modifiedById,
     o.updated_at AS modified
-  FROM dmp.orgs o
-  LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
+  FROM source_db.orgs o
+  LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id
 )
 
 SELECT

@@ -30,14 +30,21 @@ MODEL (
   enabled true
 );
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
   rd.id,
   REPLACE(LOWER(TRIM(rd.label)), ' ', '-') AS name,
-  CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(TRIM(rd.label)), ' ', '-')) AS uri,
+  CONCAT('https://migration.org/research_domains/', REPLACE(LOWER(TRIM(rd.label)), ' ', '-')) AS uri,
   TRIM(rd.label) AS description,
   rd.parent_id AS parentResearchDomainId,
   rd.created_at AS created,
-  @VAR('super_admin_id') AS createdById,
+  (SELECT id FROM default_super_admin) AS createdById,
   rd.updated_at AS modified,
-  @VAR('super_admin_id') AS modifiedById
-FROM dmp.research_domains AS rd;
+  (SELECT id FROM default_super_admin) AS modifiedById
+FROM source_db.research_domains AS rd;

@@ -16,6 +16,6 @@ SELECT
   t.id AS old_template_id,
   nt.id AS new_template_id,
   nvt.id AS new_versioned_template_id
-FROM dmp.templates t
+FROM source_db.templates t
   LEFT JOIN migration.templates nt ON t.id = nt.old_template_id
   LEFT JOIN migration.versioned_templates nvt ON t.id = nvt.old_template_id;

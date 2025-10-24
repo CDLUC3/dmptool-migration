@@ -43,7 +43,14 @@ MODEL (
   enabled true
 );
 
-WITH latest_published AS (
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+),
+
+latest_published AS (
   SELECT inttmplt.family_id,
          inttmplt.old_template_id,
          inttmplt.visibility,
@@ -73,17 +80,17 @@ SELECT
     ELSE ro.ror_id
   END AS ownerId,
   CASE
-    WHEN t.locale IN ('pt', 'pt-BR') OR t.family_id IN (SELECT pt.family_id FROM migration.templates_pt_br AS pt) THEN 'pt-BR'
+    WHEN t.locale IN ('pt', 'pt-BR') OR t.family_id IN (SELECT pt.family_id FROM intermediate.templates_pt_br AS pt) THEN 'pt-BR'
     ELSE 'en-US'
   END AS languageId,
-  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS createdById,
+  COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS createdById,
   t.created_at AS created,
-  COALESCE(intt.new_created_by_id, @VAR('super_admin_id')) AS modifiedById,
+  COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS modifiedById,
   t.updated_at AS modified
-FROM dmp.templates AS t
+FROM source_db.templates AS t
   LEFT JOIN latest_published AS lp ON t.family_id = lp.family_id
   JOIN intermediate.templates AS intt ON t.id = intt.old_template_id
-    LEFT JOIN dmp.registry_orgs AS ro ON t.org_id = ro.org_id
+    LEFT JOIN source_db.registry_orgs AS ro ON t.org_id = ro.org_id
 WHERE t.customization_of IS NULL
   AND intt.is_current_template
 ORDER BY t.created_at ASC;
@@ -91,4 +98,4 @@ ORDER BY t.created_at ASC;
 -- Reconciliation queries:
 -- SELECT COUNT(id) from migration.templates; #477
 --
--- SELECT COUNT(DISTINCT family_id) FROM dmp.templates WHERE customization_of IS NULL; #477
+-- SELECT COUNT(DISTINCT family_id) FROM source_db.templates WHERE customization_of IS NULL; #477

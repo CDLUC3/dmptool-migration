@@ -23,7 +23,7 @@ Start by forking this repository to your own GitHub account:
 
 ```bash
 git clone https://github.com/CDLUC3/dmptool-migration.git
-cd dmptool-migration
+cd migration-migration
 ```
 
 ### 2. Create a Branch

@@ -53,7 +53,7 @@ SELECT
   t.createdById,
   s.updated_at AS modified,
   t.modifiedById
-FROM dmp.sections AS s
+FROM source_db.sections AS s
   JOIN intermediate.sections AS ints ON s.id = ints.old_section_id
     JOIN migration.templates AS t ON ints.old_template_id = t.old_template_id
 ORDER BY s.created_at ASC;
@@ -62,6 +62,6 @@ ORDER BY s.created_at ASC;
 -- SELECT COUNT(id) from migration.sections; #2,366
 --
 -- SELECT COUNT(DISTINCT s.id)
--- FROM dmp.templates t INNER JOIN dmp.phases p ON t.id = p.template_id INNER JOIN dmp.sections s ON p.id = s.phase_id
+-- FROM source_db.templates t INNER JOIN source_db.phases p ON t.id = p.template_id INNER JOIN source_db.sections s ON p.id = s.phase_id
 -- WHERE t.customization_of IS NULL
---   AND t.id = (SELECT MAX(tmplt.id) FROM dmp.templates AS tmplt WHERE tmplt.family_id = t.family_id); #2,366
+--   AND t.id = (SELECT MAX(tmplt.id) FROM source_db.templates AS tmplt WHERE tmplt.family_id = t.family_id); #2,366

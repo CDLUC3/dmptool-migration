@@ -29,5 +29,5 @@ SELECT
   q.id AS old_question_id,
   q.created_at AS old_created_at,
   s.publishable
-FROM dmp.questions q
+FROM source_db.questions q
   JOIN intermediate.sections s ON q.section_id = s.old_section_id;

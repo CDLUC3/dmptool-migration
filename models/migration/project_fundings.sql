@@ -18,7 +18,7 @@ MODEL (
 );
 
 SELECT
-  p.id,
+  ROW_NUMBER() OVER () AS id,
   p.id AS projectId,
   p.funder_id AS affiliationId,
   p.funding_status AS status,
