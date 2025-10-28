@@ -20,13 +20,19 @@ WITH default_member_role AS (
   LIMIT 1
 )
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
-  ROW_NUMBER() OVER () AS id,
-  u.id AS planMemberId,
-  (SELECT id FROM default_member_role) AS memberRoleId,
-  u.id AS createdById,
-  p.created_at AS created,
-  u.id AS modifiedById,
-  p.updated_at AS modified
-FROM intermediate.plans p
-INNER JOIN intermediate.users u ON p.owner_email = u.email;
+    ROW_NUMBER() OVER (ORDER BY pm.id ASC) AS id,
+    pm.id AS planMemberId,
+    (SELECT id FROM default_member_role) AS memberRoleId,
+    pm.createdById,
+    pm.created,
+    pm.modifiedById,
+    pm.modified
+FROM migration.plan_members pm;

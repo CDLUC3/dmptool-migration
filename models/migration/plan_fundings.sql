@@ -3,6 +3,7 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
+    old_plan_id INT UNSIGNED NOT NULL,
     planId INT UNSIGNED NOT NULL,
     projectFundingId INT UNSIGNED NOT NULL,
     createdById INT UNSIGNED NOT NULL,
@@ -13,13 +14,21 @@ MODEL (
   enabled true
 );
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
-  p.id,
-  p.id AS planId,
+  ROW_NUMBER() OVER (ORDER BY p.id ASC) AS id,
+  p.id AS old_plan_id,
+  mp.id AS planId,
   p.id AS projectFundingId,
-  u.id AS createdById,
+  mp.createdById,
   p.created_at AS created,
-  u.id AS modifiedById,
+  mp.modifiedById,
   p.updated_at AS modified
 FROM intermediate.plans p
-LEFT JOIN intermediate.users u ON p.owner_email = u.email;
+LEFT JOIN migration.plans mp ON p.id = mp.old_plan_id;

@@ -6,6 +6,28 @@ Requirements:
 - mysql client
 - duckdb
 
+## Setup
+Create a python virtual environment:
+```
+python3 -m venv venv
+```
+
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+Create a `.env` file with the following variables, customizing where appropriate:
+```bash
+MYSQL_DATABASE=migration
+MYSQL_HOST=localhost
+MYSQL_TCP_PORT=3306
+MYSQL_USER=user
+MYSQL_PWD=password
+```
+
+## Moving your source database to the same server as your target database
+
 SQLMesh requires that your source database and target database reside on the same server. If you need to move your source database to the same server as your target database, you can use `mysqldump` and `mysql` to export and import the database.
 For example:
 ```shell
@@ -15,35 +37,22 @@ mysqldump -h [host] -P [port] -u [username] -p [database] \
   --tables annotations departments identifiers languages plans orgs phases question_options questions questions_themes registry_orgs research_domains roles sections templates themes users users_perms \
   > ~/source_db.sql
 
-# Dump the ROR data
-mysqldump -h [host] -P [port] -u [username] -p migration \
-  --single-transaction --quick --skip-lock-tables --lock-tables=false --set-gtid-purged=OFF \
-  --tables ror_staging \
-  > ~/ror_staging.sql
-
 # Create the target database on the new server
 mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE source_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-# Import the ROR data into the new server
-mysql -u [username] -p -P [port] -h [host] source_db < ~/ror_staging.sql
 
 # Import the source database dump into the new server
 mysql -u [username] -p -P [port] -h [host] source_db < ~/source_db.sql
 ```
+This does not work for mysql v9, so be sure to install v8!
+Note that you may need to use `127.0.0.1` instead of `localhost` for the host to avoid socket connection issues.
 
-## Setting up the ROR staging table (All the ROR records)
-To create the `ror_staging` table you must add the ROR JSON data file to the `./data` directory and run the `python3 ./scripts/transform_ror.py` script to transform the JSON data into a format suitable for loading into MySQL. Then run `
-```bash
-# Transform the ROR data by extracting only the info we want
-> python3 ./scripts/transform_ror.py
-# Load the transformed ROR data into DuckDB and mount as a table in MySQL
-> set -a; source .env; set +a
-> duckdb ':memory:' < ./scripts/load_ror_staging.sql
-```
+## Setting up the ROR staging table (All the ROR records from the ROR data file)
 
-You may need to manually create the `migration.ror_staging` table prior to running the DuckDB step.
+To create the `ror_staging` table you must add the ROR JSON data file to the `./data` directory and run the `python3 ./scripts/transform_ror.py` script to transform the JSON data into a format suitable for loading into MySQL. 
+
+First make sure the `migration.ror_staging` table exists:
 ```sql
-CREATE TABLE `migration.ror_staging` (
+CREATE TABLE IF NOT EXISTS `migration.ror_staging` (
   `uri` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `provenance` varchar(16) NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
@@ -59,143 +68,26 @@ CREATE TABLE `migration.ror_staging` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
-## Requirements
-* Python 3.12
-
-## Setup
-Create venv:
-```
-python3 -m venv venv
-```
-
-Install dependencies:
-```
-pip install -r requirements.txt
-```
-
-Create a `.env` file with the following variables, customising where appropriate:
+Then run the following commands to transform and load the ROR data:
 ```bash
-MYSQL_DATABASE=migration
-MYSQL_HOST=localhost
-MYSQL_TCP_PORT=3306
-MYSQL_USER=user
-MYSQL_PWD=password
+# Transform the ROR data by extracting only the info we want
+> python3 ./scripts/transform_ror.py
+# Load the transformed ROR data into DuckDB and mount as a table in MySQL
+> set -a; source .env; set +a
+> duckdb ':memory:' < ./scripts/load_ror_staging.sql
 ```
 
-## Overview
+## TODO: Cleanup of old data before migration
 
-**PREP WORK:**
-- Create `affiliationDepartments` table in new system with `affiliationId`, `name` and `abbreviation`
-- Create a `templateLinks` and `versionedTemplateLinks` table in the new system with `templateId`, `versionedTemplateId`, `linkType`, `url` and `text`
-- Add `slug` field to the `tags` table in the new system (unique, not null)
-- Add `userDepartments` table to the new system (userId, departmentId)
-- Clean up `users` by reducing the perms for users who are no longer super admin! `DELETE FROM users_perms WHERE perm_id IN (3, 10) AND user_id IN (13785, 16995, 9032, 52693, 2240, 136507, 136508);`
-- Add `oldPasswordHash` field to the `users` table in the new system (nullable)
-- Add additional indices to tables to speed up migration queries:
-  -  answers_question_options -> (question_option_id)
-- Clean up users attached to the "Non Partner Institution" org (id=1). See the [Users doc](docs/Users.md) for more details.
-- In `affiliationDepartments`, `affiliationEmailDomains` and `affiliationLinks` change `affiliationId` from `INT` to `VARCHAR(255)`.
-- Update all `INT` id fields to `INT UNSIGNED`.
-- We need to add the following values to the RelatedWorks WorkType enum:
-  - PRE_REGISTRATION (e.g. https://doi.org/10.17605/OSF.IO/4NF7Q) 
-  - PROTOCOL (e.g. https://dx.doi.org/10.17504/protocols.io.x54v9jx7zg3e/v1) 
-  - TRADITIONAL_KNOWLEDGE (e.g. https://localcontextshub.org/projects/e884d181-a5b8-40ec-9311-81870a3b372a/) 
-
+Clean up `registry_orgs` and `orgs` table which has around 135 entries. Run the following query, then merge them manually based on `displayName`:
 ```
-- Clean up `registry_orgs` table which has a few duplicate `org_id` entries. Run the following query, the orgs in the `orgs` table likely need to be merged and the registry_org table updated to map to the merged org only:
-```
-SELECT * FROM registry_orgs WHERE org_id IS NOT NULL AND org_id IN (
-  SELECT DISTINCT org_id
-  FROM registry_orgs
-  WHERE org_id IS NOT NULL
-  GROUP BY org_id
-  HAVING COUNT(*) > 1
-);
+SELECT displayName, count(id) AS id_count
+FROM migration.affiliations
+GROUP BY displayName
+HAVING id_count > 1;
 ```
 
-### Mapping tables to link ids from the old system to the new system
-
-We will likely need the following ID mapping tables:
-- themes [id] -> tags [id]
-- templates [family_id, version] -> templates [id] and versionedTemplates [id]
-- sections [id] -> sections [id] and versionedSections [id]
-- questions [id] -> questions [id] and versionedQuestions [id]
-- plans [id] -> projects [id] and plans [id]
-- answers [id] -> answers [id]
-- research_domains -> researchDomains (see below for mapping)
-- users (we can just use the email address for to map)
-- affiliations (we will use the affiliations.uri for this, so no need to map)
-
-## Questions / Issues
-
-### Organizations
-We have a lot of junk and duplicate orgs in the old system. We should clean these up before we do the migration. Here is a query to help identify some of these:
-```sql
-
-```
-
-### Templates with Phases
-
-We do not have a concept of "Template Phases" in the new system. There are 55 templates in the old system that have multiple phases. These templates are used by 152 plans in the old system.
-
-There are 71 of these templates that have no plans associated with them.
-```sql
-SELECT orgs.id, orgs.name, templates.id, templates.title, templates.created_at, phases.template_id,
-  COUNT(DISTINCT plans.id) AS plan_count,
-  COUNT(phases.id) AS phase_count
-FROM phases
-  INNER JOIN templates ON phases.template_id = templates.id
-    LEFT JOIN plans ON templates.id = plans.id
-    LEFT JOIN orgs ON templates.org_id = orgs.id
-GROUP BY phases.template_id, templates.title, templates.created_at, phases.template_id
-HAVING phase_count > 1 AND plan_count < 1
-ORDER BY phase_count desc;
-```
-
-We have some options for how to handle these multi-phase templates and their associated plans:
-1. Make each phase a template in its own right and then for any plans that are using the template (with phase) we create a single project and then a plan for each of the phases (new templates). So for example:
-  - Template A has 3 phases
-  - We create Template A1, A2 and A3 in the new system
-  - Plan 123 is based on Template A 
-  - We create a single Project with 3 plans in the new system for Templates A1, A2 and A3
-2. Make the phases sections in the new system. We would need to determine how to flatten the phase-section relationship though. So for example:
-  - Template A has 3 phases
-  - We create Template A in the new system
-  - Each phase in Template A becomes a section in Template A
-  - Plan 123 is based on Template A 
-  - We create a single Project with a single plan in the new system for Template A
-
-Here is a query to see templates with multiple phases:
-```
-SELECT orgs.id, orgs.name, templates.id, templates.title, templates.created_at, phases.template_id,
-  COUNT(DISTINCT plans.id) AS plan_count,
-  COUNT(phases.id) AS phase_count
-FROM phases
- INNER JOIN templates ON phases.template_id = templates.id
-   LEFT JOIN plans ON templates.id = plans.id
-   LEFT JOIN orgs ON templates.org_id = orgs.id
-GROUP BY phases.template_id, templates.title, templates.created_at, phases.template_id
-HAVING phase_count > 1
-AND plan_count > 0
-ORDER BY phase_count desc;
-```
-
-The migrations should be run in the following order:
-1. [MISCELLANEOUS](docs/Misc.md)
-2. [USERS](docs/Users.md)
-2. [AFFILIATIONS](docs/Affiliations.md)
-3. [TEMPLATES](docs/Templates.md)
-4. [SECTIONS AND QUESTIONS](docs/SectionsAndQuestions.md)
-5. [PROJECTS, PLANS, ANSWERS](docs/Projects.md)
-6. [CONTRIBUTORS](docs/Contributors.md)
-
-## Running Migrations
-Load ROR data file:
-```bash
-python3 ./scripts/transform_ror.py
-set -a; source .env; set +a
-duckdb ':memory:' < ./scripts/load_ror_staging.sql
-```
+## Extract and Transform the data from the source database using SQLMesh
 
 Run SQLMesh plan in a dev environment:
 ```bash
@@ -207,53 +99,6 @@ Run SQLMesh plan in the prod environment:
 sqlmesh plan
 ```
 
-## Getting Migration Data Into The Target System
+## Load the transformed data into the target database
 
-SQLMesh creates VIEWs in the migration database. To get this data into the target system database, we will need to first materialize tables from each view, then use `mysqldump` to export the materialized tables and `mysql` to create the tables in the target system's database.
-
-First create the tables:
-```sql
--- Change this if your migration database name differs
-SET @schema_name = 'migration';
-
--- Generate CREATE TABLE ... AS SELECT * FROM view statements for all views
-SELECT 
-  CONCAT(
-    'CREATE TABLE ',
-    '`', @schema_name, '`.',
-    '`', TABLE_NAME, '_data`',
-    ' AS SELECT * FROM `', @schema_name, '`.`', TABLE_NAME, '`;'
-  ) AS create_table_sql
-FROM information_schema.VIEWS
-WHERE TABLE_SCHEMA = @schema_name;
-```
-
-This will generate the SQL statements necessary ton create the tables. Copy and paste the output and run it against the migration database to create the tables.
-
-Second dump the migration database generated by SQLMesh from the Running Migrations step:
-```bash
-SCHEMA=migration
-
-TABLES=$(mysql -u [username] -p -h [host] -P [port] -Nse \
-"SELECT TABLE_NAME 
- FROM information_schema.tables 
- WHERE TABLE_SCHEMA='$SCHEMA' 
-   AND TABLE_TYPE='BASE TABLE';")
-   
-mysqldump -u [username] -p -P [port] -h [host] \
-  --single-transaction --quick --skip-lock-tables --lock-tables=false --set-gtid-purged=OFF 
-  $SCHEMA $TABLES > ~/migration.sql
-```
-
-You may need to create the new database first in the target system:
-```bash
-mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE migration CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-Then load the dump into the target system database:
-```bash
-mysql -u [username] -p -P [port] -h [host] [target_database] < ~/migration.sql
-```
-
-This does not work for mysql v9, so be sure to install v8!
-Note that you may need to use `127.0.0.1` instead of `localhost` for the host to avoid socket connection issues.
+Munually run the SQL statements in the [Final Migrations file](docs/FinalMigrationSteps.sql) against the target database to load the transformed data.
