@@ -17,6 +17,13 @@ MODEL (
   enabled true
 );
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
   ROW_NUMBER() OVER () AS id,
   CASE
@@ -25,10 +32,10 @@ SELECT
   END AS affiliationId,
   TRIM(d.name) AS name,
   TRIM(d.code) AS code,
-  @VAR('super_admin_id') AS createdById,
+  (SELECT id FROM default_super_admin) AS createdById,
   d.created_at AS created,
-  @VAR('super_admin_id') AS modifiedById,
+  (SELECT id FROM default_super_admin) AS modifiedById,
   d.updated_at AS modified
-FROM dmp.departments d
-INNER JOIN dmp.orgs o ON d.org_id = o.id
-LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id;
+FROM source_db.departments d
+INNER JOIN source_db.orgs o ON d.org_id = o.id
+LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id;

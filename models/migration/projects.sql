@@ -3,6 +3,7 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
+    old_plan_id INT UNSIGNED,
     title VARCHAR(255) NOT NULL,
     abstractText TEXT,
     researchDomainId VARCHAR(255),
@@ -17,17 +18,25 @@ MODEL (
   enabled true
 );
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
-  p.id,
+  ROW_NUMBER() OVER (ORDER BY p.id ASC) AS id,
+  p.id AS old_plan_id,
   p.title,
   p.description AS abstractText,
   rdm.new_id AS researchDomainId,
   DATE_FORMAT(p.start_date, '%Y-%m-%d') AS startDate,
   DATE_FORMAT(p.end_date, '%Y-%m-%d') AS endDate,
   p.is_test_plan AS isTestProject,
-  u.id AS createdById,
+  COALESCE(u.id, (SELECT id FROM default_super_admin)) AS createdById,
   p.created_at AS created,
-  u.id AS modifiedById,
+  COALESCE(u.id, (SELECT id FROM default_super_admin)) AS modifiedById,
   p.updated_at AS modified
 FROM intermediate.plans p
 LEFT JOIN intermediate.users u ON p.owner_email = u.email

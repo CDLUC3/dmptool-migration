@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json
 import pathlib
+from urllib.parse import urlparse
 from typing import Optional
 
 
@@ -13,6 +14,10 @@ def transform_ror(ror_path: pathlib.Path, output_path: pathlib.Path):
 
     # Transform ROR
     for record in data:
+        # Skip the inactive records
+        if not is_active(record):
+            continue
+
         results.append(
             dict(
                 uri=record.get("id"),
@@ -23,6 +28,7 @@ def transform_ror(ror_path: pathlib.Path, output_path: pathlib.Path):
                 funder=get_is_funder(record),
                 fundrefId=get_fundref_id(record),
                 homepage=get_homepage(record),
+                domain=get_domain(record),
                 acronyms=get_acronyms(record),
                 aliases=get_aliases(record),
                 types=get_types(record),
@@ -33,6 +39,9 @@ def transform_ror(ror_path: pathlib.Path, output_path: pathlib.Path):
     with open(output_path, mode="w") as f:
         json.dump(results, f)
 
+
+def is_active(record: dict) -> bool:
+    return record.get("status") == "active"
 
 def get_name(record: dict) -> Optional[str]:
     for name in record.get("names", []):
@@ -61,6 +70,23 @@ def get_domain(record: dict) -> Optional[str]:
     if domains:
         return domains[0]
 
+    # If no domain was defined in the ROR record, extract it from the homepage
+    return extract_domain_from_homepage(get_homepage(record) or "")
+
+def extract_domain_from_homepage(homepage: str) -> str | None:
+    if not homepage:
+        return None
+
+    parsed = urlparse(homepage)
+    hostname = parsed.hostname or ""
+    if not hostname:
+        return None
+
+    # Remove "www." only if it's the leading subdomain
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+
+    return hostname
 
 def get_display_name(record: dict) -> str:
     name = get_name(record)
@@ -74,7 +100,6 @@ def get_display_name(record: dict) -> str:
         parts.append(f"({domain})")
 
     return " ".join(parts)
-
 
 def get_search_name(record: dict) -> str:
     name = get_name(record)
@@ -107,7 +132,7 @@ def get_fundref_id(record: dict) -> Optional[str]:
 def get_homepage(record: dict) -> Optional[str]:
     for link in record.get("links"):
         if link.get("type") == "website":
-            return record.get("value")
+            return link.get("value")
 
 
 def get_types(record: dict):

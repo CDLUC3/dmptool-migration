@@ -14,7 +14,7 @@ MODEL (
   columns (
     id INT UNSIGNED NOT NULL,
     templateId INT NOT NULL,
-    linkType VARCHAR(10) NOT NULL DEFAULT 'FUNDER',
+    linkType VARCHAR(16) NOT NULL DEFAULT 'FUNDER',
     url VARCHAR(255),
     text VARCHAR(255),
     createdById INT UNSIGNED NOT NULL,
