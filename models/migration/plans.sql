@@ -38,5 +38,5 @@ SELECT
   u.id AS modifiedById,
   p.updated_at AS modified
 FROM intermediate.plans p
-LEFT JOIN intermediate.template_mappings map ON p.template_id = map.old_template_id
-LEFT JOIN intermediate.users u ON p.owner_email = u.email;
+  JOIN intermediate.template_mappings map ON p.template_id = map.old_template_id
+  LEFT JOIN intermediate.users u ON p.owner_email = u.email;

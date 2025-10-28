@@ -79,7 +79,7 @@ SELECT
   TRIM(vt.description) AS description,
   CASE
     WHEN vt.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://migration.org/affiliations/', vt.org_id)
+    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', vt.org_id)
     ELSE ro.ror_id
   END AS ownerId,
   CASE WHEN vt.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS visibility,

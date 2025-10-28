@@ -109,7 +109,7 @@ ror_affiliations AS (
     rs.provenance AS provenance,
     rs.name AS name,
     rs.displayName AS displayName,
-    SUBSTRING(rs.searchName, 1, 512) AS searchName,
+    rs.searchName AS searchName,
     IF(rs.funder=1, TRUE, FALSE) AS funder,
     rs.fundrefId AS fundrefId,
     rs.homepage AS homepage,
@@ -131,7 +131,7 @@ ror_affiliations AS (
     CURRENT_TIMESTAMP AS created,
     (SELECT id FROM default_super_admin) AS modifiedById,
     CURRENT_TIMESTAMP AS modified
-  FROM source_db.ror_staging rs
+  FROM migration.ror_staging rs
     LEFT JOIN ror_orgs ro ON rs.uri = ro.ror_id
 ),
 

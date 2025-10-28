@@ -1,10 +1,11 @@
 MODEL (
-  name migration.project_member_roles,
+  name migration.plan_members,
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
+    planId INT UNSIGNED NOT NULL,
     projectMemberId INT UNSIGNED NOT NULL,
-    memberRoleId INT UNSIGNED NOT NULL,
+    isPrimaryContact TINYINT(1) NOT NULL DEFAULT 0,
     createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modifiedById INT UNSIGNED NOT NULL,
@@ -13,20 +14,15 @@ MODEL (
   enabled true
 );
 
-WITH default_member_role AS (
-  SELECT id
-  FROM migration.member_roles
-  WHERE isDefault = 1
-  LIMIT 1
-)
-
 SELECT
   ROW_NUMBER() OVER () AS id,
-  u.id AS projectMemberId,
-  (SELECT id FROM default_member_role) AS memberRoleId,
-  u.id AS createdById,
+  p.id AS planId,
+  pm.id AS projectMemberId,
+  pm.isPrimaryContact,
+  u.userId AS createdById,
   p.created_at AS created,
-  u.id AS modifiedById,
+  u.userId AS modifiedById,
   p.updated_at AS modified
 FROM intermediate.plans p
-INNER JOIN intermediate.users u ON p.owner_email = u.email;
+  INNER JOIN migration.project_members pm ON p.owner_email = pm.email
+    INNER JOIN migration.user_emails u on p.owner_email = u.email;

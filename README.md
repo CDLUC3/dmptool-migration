@@ -1,6 +1,11 @@
 # dmptool-migration
 SQLMesh code to facilitate data migration from the old Rails DMP Tool to the new JS system
 
+Requirements:
+- python3
+- mysql client
+- duckdb
+
 SQLMesh requires that your source database and target database reside on the same server. If you need to move your source database to the same server as your target database, you can use `mysqldump` and `mysql` to export and import the database.
 For example:
 ```shell
@@ -24,6 +29,34 @@ mysql -u [username] -p -P [port] -h [host] source_db < ~/ror_staging.sql
 
 # Import the source database dump into the new server
 mysql -u [username] -p -P [port] -h [host] source_db < ~/source_db.sql
+```
+
+## Setting up the ROR staging table (All the ROR records)
+To create the `ror_staging` table you must add the ROR JSON data file to the `./data` directory and run the `python3 ./scripts/transform_ror.py` script to transform the JSON data into a format suitable for loading into MySQL. Then run `
+```bash
+# Transform the ROR data by extracting only the info we want
+> python3 ./scripts/transform_ror.py
+# Load the transformed ROR data into DuckDB and mount as a table in MySQL
+> set -a; source .env; set +a
+> duckdb ':memory:' < ./scripts/load_ror_staging.sql
+```
+
+You may need to manually create the `migration.ror_staging` table prior to running the DuckDB step.
+```sql
+CREATE TABLE `migration.ror_staging` (
+  `uri` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `provenance` varchar(16) NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `displayName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `searchName` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `funder` tinyint(1) NOT NULL DEFAULT '0',
+  `fundrefId` varchar(255) DEFAULT NULL,
+  `homepage` varchar(255) DEFAULT NULL,
+  `domain` varchar(255) DEFAULT NULL,
+  `acronyms` json DEFAULT NULL,
+  `aliases` json DEFAULT NULL,
+  `types` json DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 ## Requirements

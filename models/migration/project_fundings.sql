@@ -21,7 +21,11 @@ SELECT
   ROW_NUMBER() OVER () AS id,
   p.id AS projectId,
   p.funder_id AS affiliationId,
-  p.funding_status AS status,
+  CASE p.funding_status
+    WHEN 1 THEN 'GRANTED'
+    WHEN 2 THEN 'DENIED'
+    ELSE 'PLANNED'
+  END AS status,
   NULL AS funderProjectNumber,
   p.grant_id AS grantId,
   p.grant_number AS funderOpportunityNumber,
@@ -30,4 +34,5 @@ SELECT
   u.id AS modifiedById,
   p.updated_at AS modified
 FROM intermediate.plans p
-LEFT JOIN intermediate.users u ON p.owner_email = u.email;
+  LEFT JOIN intermediate.users u ON p.owner_email = u.email
+WHERE p.funder_id IS NOT NULL AND u.id IS NOT NULL;

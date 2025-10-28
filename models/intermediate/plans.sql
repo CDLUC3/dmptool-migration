@@ -54,12 +54,12 @@ SELECT
     ELSE 'DRAFT' END AS status,
   CASE
     WHEN p.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL THEN CONCAT('https://migration.org/affiliations/', o.id)
+    WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
     ELSE ro.ror_id
   END AS org_id,
   CASE
     WHEN p.funder_id IS NULL THEN NULL
-    WHEN funder_rors.id IS NULL THEN CONCAT('https://migration.org/affiliations/', funders.id)
+    WHEN funder_rors.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', funders.id)
     ELSE funder_rors.ror_id
   END AS funder_id
 FROM source_db.plans p

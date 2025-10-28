@@ -13,10 +13,17 @@ MODEL (
   enabled true
 );
 
+WITH default_member_role AS (
+  SELECT id
+  FROM migration.member_roles
+  WHERE isDefault = 1
+  LIMIT 1
+)
+
 SELECT
   ROW_NUMBER() OVER () AS id,
   u.id AS planMemberId,
-  15 AS memberRoleId,
+  (SELECT id FROM default_member_role) AS memberRoleId,
   u.id AS createdById,
   p.created_at AS created,
   u.id AS modifiedById,

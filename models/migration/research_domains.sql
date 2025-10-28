@@ -40,7 +40,7 @@ WITH default_super_admin AS (
 SELECT
   rd.id,
   REPLACE(LOWER(TRIM(rd.label)), ' ', '-') AS name,
-  CONCAT('https://migration.org/research_domains/', REPLACE(LOWER(TRIM(rd.label)), ' ', '-')) AS uri,
+  CONCAT('https://dmptool.org/research_domains/', REPLACE(LOWER(TRIM(rd.label)), ' ', '-')) AS uri,
   TRIM(rd.label) AS description,
   rd.parent_id AS parentResearchDomainId,
   rd.created_at AS created,

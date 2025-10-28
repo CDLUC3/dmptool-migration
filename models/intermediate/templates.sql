@@ -42,6 +42,12 @@ current_ids AS (
   SELECT t.family_id, MAX(t.id) AS current_id
   FROM source_db.templates AS t
   GROUP BY t.family_id
+),
+
+version_counts AS (
+  SELECT t.family_id, COUNT(*) AS version_count
+  FROM source_db.templates AS t
+  GROUP BY t.family_id
 )
 
 SELECT
@@ -58,7 +64,7 @@ SELECT
   CASE
     WHEN t.published = 1 THEN FALSE
     WHEN t.published = 0
-      AND t.id != (SELECT ci.current_id FROM current_ids AS ci WHERE ci.family_id = t.family_id) THEN TRUE
+      AND (t.id != ci.current_id OR (t.id = ci.current_id AND vc.version_count = 1)) THEN TRUE
     ELSE FALSE
   END AS was_published,
   (t.id = (SELECT ci.current_id
@@ -66,4 +72,6 @@ SELECT
             WHERE ci.family_id = t.family_id)) AS is_current_template,
   oc.user_id AS new_created_by_id
 FROM source_db.templates t
+  LEFT JOIN current_ids AS ci ON ci.family_id = t.family_id
+  LEFT JOIN version_counts AS vc ON vc.family_id = t.family_id
   LEFT JOIN org_creator oc ON t.org_id = oc.org_id

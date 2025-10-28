@@ -69,7 +69,7 @@ SELECT
   intt.best_practice AS bestPractice,
   CASE WHEN intt.family_id == lp.family_id
     CASE WHEN lp.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END
-    ELSE NULL
+    ELSE 'PUBLIC'
   END AS latestPublishVisibility,
   (intt.is_published = 0) AS isDirty,
   CASE WHEN intt.family_id == lp.family_id THEN CONCAT('v', lp.version) ELSE NULL END AS latestPublishVersion,
