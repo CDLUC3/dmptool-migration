@@ -12,8 +12,6 @@ test_affiliation_departments:
           name: "ROR Institution"
 
     dmp.registry_orgs:
-      columns:
-        ror_id: VARCHAR(255)
       rows:
         - id: 1000
           org_id: 101

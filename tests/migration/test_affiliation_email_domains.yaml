@@ -5,8 +5,6 @@ test_affiliation_email_domains:
 
   inputs:
     dmp.orgs:
-      columns:
-        target_url: VARCHAR(255)
       rows:
         - id: 1
           target_url: NULL

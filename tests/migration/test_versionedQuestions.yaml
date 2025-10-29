@@ -3,13 +3,6 @@ test_versionedQuestions:
 
   inputs:
     dmp.questions:
-      columns:
-        id: INT
-        question_format_id: INT
-        text: MEDIUMTEXT
-        number: INT
-        created_at: DATETIME
-        updated_at: DATETIME
       rows:
         - id: 111
           question_format_id: 4 # Checkboxes
@@ -47,11 +40,6 @@ test_versionedQuestions:
           updated_at: "2025-05-03T00:00:00Z"
 
     dmp.question_options:
-      columns:
-        question_id: INT
-        number: INT
-        is_default: BOOLEAN
-        text: VARCHAR(255)
       rows:
         - question_id: 111
           number: 1
@@ -79,11 +67,6 @@ test_versionedQuestions:
           text: "Option C"
 
     dmp.annotations:
-      columns:
-        question_id: INT
-        type: INT
-        org_id: INT
-        text: MEDIUMTEXT
       rows:
         - question_id: 331
           type: 0

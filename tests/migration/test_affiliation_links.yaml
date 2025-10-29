@@ -3,8 +3,6 @@ test_affiliation_links:
 
   inputs:
     dmp.orgs:
-      columns:
-        links: TEXT
       rows:
         - id: 1
           links: NULL

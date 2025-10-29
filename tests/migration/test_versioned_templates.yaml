@@ -143,22 +143,6 @@ test_templates:
           old_family_id: 98765
 
     dmp.templates:
-      columns:
-        id: INT
-        title: VARCHAR
-        description: MEDIUMTEXT
-        customization_of: INT
-        published: BOOLEAN
-        org_id: INT
-        locale: VARCHAR
-        is_default: BOOLEAN
-        created_at: DATETIME
-        updated_at: DATETIME
-        version: INT
-        visibility: INT
-        family_id: INT
-        archived: BOOLEAN
-        links: JSON
       rows:
         - id: 1
           title: "Published Organizational Template"
