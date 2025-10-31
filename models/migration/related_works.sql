@@ -2,7 +2,7 @@ MODEL (
   name migration.related_works,
   kind FULL,
   columns (
-    id INT UNSIGNED NOT NULL,
+    id INT UNSIGNED NULL,
     plan_id INT UNSIGNED NOT NULL,
     identifier_type VARCHAR(255) NOT NULL,
     value VARCHAR(255),
@@ -17,13 +17,13 @@ WITH related_works_processed AS (
   SELECT
     rw.id,
     rw.plan_id,
-    REGEXP_SUBSTR(LOWER(TRIM(rw.value)), '(10\\.[0-9]+/.*)', 1, 1) AS value,
     CASE
       WHEN REGEXP_SUBSTR(LOWER(TRIM(rw.value)), '(10\\.[0-9]+/.*)', 1, 1) IS NOT NULL THEN 'DOI'
       ELSE NULL
     END AS identifier_type,
-    rw.value AS old_value,
-    rw.identifier_type AS old_identifier_type
+    REGEXP_SUBSTR(LOWER(TRIM(rw.value)), '(10\\.[0-9]+/.*)', 1, 1) AS value,
+    rw.identifier_type AS old_identifier_type,
+    rw.value AS old_value
   FROM intermediate.related_works rw
 )
 
@@ -36,8 +36,20 @@ SELECT
     WHEN COALESCE(rws.value, rwp.value) IS NOT NULL THEN 1
     ELSE 0
   END AS is_valid,
+  rwp.old_identifier_type,
   rwp.old_value,
-  rwp.old_identifier_type
 FROM related_works_processed rwp
-LEFT JOIN seeds.related_works AS rws ON rwp.id = rws.id
-ORDER BY rwp.plan_id DESC, rwp.id DESC;
+LEFT JOIN seeds.related_works rws ON rwp.id = rws.id AND rws.id IS NOT NULL
+
+UNION ALL
+
+SELECT
+  rws.id,
+  rws.plan_id,
+  rws.identifier_type,
+  rws.value,
+  1 AS is_valid,
+  NULL AS old_identifier_type,
+  NULL AS old_value
+FROM seeds.related_works rws
+WHERE rws.id IS NULL

@@ -1,0 +1,93 @@
+test_related_works:
+  model: migration.related_works
+
+  inputs:
+    intermediate.related_works:
+      rows:
+        - id: 1
+          plan_id: 1
+          identifier_type: "DOI"
+          value: " https://doi.org/10.001/abc "
+
+        - id: 2
+          plan_id: 1
+          identifier_type: "OTHER"
+          value: " https://doi.org/10.002/DEF "
+
+        - id: 3
+          plan_id: 1
+          identifier_type: "URL"
+          value: "https://example.com"
+
+        - id: 4
+          plan_id: 1
+          identifier_type: "URL"
+          value: "https://example.com/article-url"
+
+        - id: 5
+          plan_id: 1
+          identifier_type: "URL"
+          value: "abcdef"
+
+    seeds.related_works:
+      rows:
+        - id: 4
+          plan_id: 1
+          identifier_type: "DOI"
+          value: "10.003/hij"
+
+        - id: NULL
+          plan_id: 1
+          identifier_type: "DOI"
+          value: "10.004/klm"
+
+  outputs:
+    query:
+      rows:
+        - id: 1
+          plan_id: 1
+          identifier_type: "DOI"
+          value: "10.001/abc"
+          is_valid: 1
+          old_identifier_type: "DOI"
+          old_value: " https://doi.org/10.001/abc "
+
+        - id: 2
+          plan_id: 1
+          identifier_type: "DOI"
+          value: "10.002/def"
+          is_valid: 1
+          old_identifier_type: "OTHER"
+          old_value: " https://doi.org/10.002/DEF "
+
+        - id: 3
+          plan_id: 1
+          identifier_type: NULL
+          value: NULL
+          is_valid: 0
+          old_identifier_type: "URL"
+          old_value: "https://example.com"
+
+        - id: 4
+          plan_id: 1
+          identifier_type: "DOI"
+          value: "10.003/hij"
+          is_valid: 1
+          old_identifier_type: "URL"
+          old_value: "https://example.com/article-url"
+
+        - id: 5
+          plan_id: 1
+          identifier_type: NULL
+          value: NULL
+          is_valid: 0
+          old_identifier_type: "URL"
+          old_value: "abcdef"
+
+        - id: NULL
+          plan_id: 1
+          identifier_type: "DOI"
+          value: "10.004/klm"
+          is_valid: 1
+          old_identifier_type: NULL
+          old_value: NULL

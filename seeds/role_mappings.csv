@@ -1,0 +1,33 @@
+old_id,new_id,label,uri
+1,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+3,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+5,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+7,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+9,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+11,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+13,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+15,2,Data Manager,https://credit.niso.org/contributor-roles/data-curation/
+2,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+3,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+6,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+7,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+10,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+11,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+14,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+15,5,Principal Investigator (PI),https://credit.niso.org/contributor-roles/investigation/
+4,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+5,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+6,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+7,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+12,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+13,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+14,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+15,7,Project Administrator,https://credit.niso.org/contributor-roles/project-administration/
+8,15,Other,http://dmptool.org/contributor_roles/other
+9,15,Other,http://dmptool.org/contributor_roles/other
+10,15,Other,http://dmptool.org/contributor_roles/other
+11,15,Other,http://dmptool.org/contributor_roles/other
+12,15,Other,http://dmptool.org/contributor_roles/other
+13,15,Other,http://dmptool.org/contributor_roles/other
+14,15,Other,http://dmptool.org/contributor_roles/other
+15,15,Other,http://dmptool.org/contributor_roles/other

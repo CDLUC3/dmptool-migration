@@ -1,16 +1,6 @@
 MODEL (
   name intermediate.related_works,
   kind FULL,
-  columns (
-    id INT UNSIGNED NOT NULL,
-    plan_id INT UNSIGNED NOT NULL,
-    work_type VARCHAR(255),
-    relation_type VARCHAR(255),
-    id_typ INT UNSIGNED NOT NULL,
-    identifier_type VARCHAR(255),
-    value VARCHAR(255),
-    citation TEXT
-  ),
   enabled: true
 );
 

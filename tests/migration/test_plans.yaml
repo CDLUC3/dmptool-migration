@@ -5,6 +5,8 @@ test_plans:
 
   inputs:
     intermediate.plans:
+#      columns:
+#        featured: BOOLEAN
       rows:
         - id: 1
           template_id: 1
