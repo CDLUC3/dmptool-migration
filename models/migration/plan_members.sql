@@ -1,10 +1,11 @@
 MODEL (
-  name migration.project_member_roles,
+  name migration.plan_members,
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
+    planId INT UNSIGNED NOT NULL,
     projectMemberId INT UNSIGNED NOT NULL,
-    memberRoleId INT UNSIGNED NOT NULL,
+    isPrimaryContact TINYINT(1) NOT NULL,
     createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modifiedById INT UNSIGNED NOT NULL,
@@ -14,16 +15,13 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER () AS id,
+  pm.id,
+  pm.projectId AS planId,
   pm.id AS projectMemberId,
-  CASE
-    WHEN pm.memberRoleId IS NOT NULL THEN pm.memberRoleId
-    ELSE rm.new_id
-  END
-  AS memberRoleId,
+  pm.isPrimaryContact,
   pm.createdById,
   pm.created,
   pm.modifiedById,
   pm.modified
-FROM intermediate.project_members pm
-LEFT JOIN seeds.role_mappings rm ON pm.oldRoleId = rm.old_id
+FROM intermediate.project_members pm;
+

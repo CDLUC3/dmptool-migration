@@ -15,21 +15,10 @@ MODEL (
     modifiedById INT UNSIGNED NOT NULL,
     modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ),
+  audits (
+    unique_values(columns := (id), blocking := false)
+  ),
   enabled true
 );
 
-SELECT
-  u.id,
-  p.id AS projectId,
-  u.org_id AS affiliationId,
-  u.firstname AS givenName,
-  u.surname AS surName,
-  u.orcid AS orcid,
-  p.owner_email AS email,
-  u.id AS createdById,
-  u.created_at AS created,
-  u.id AS modifiedById,
-  u.updated_at AS modified,
-  TRUE AS isPrimaryContact
-FROM intermediate.plans p
-INNER JOIN intermediate.users u ON p.owner_email = u.email;
+SELECT * FROM intermediate.project_members;

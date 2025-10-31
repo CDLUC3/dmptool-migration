@@ -1,6 +1,30 @@
 MODEL (
   name intermediate.plans,
   kind FULL,
+  columns (
+    `id` int,
+    `dmp_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `template_id` int,
+    `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `research_domain_id` bigint,
+    `start_date` datetime,
+    `end_date` datetime,
+    featured BOOLEAN,
+    `created_at` datetime,
+    `updated_at` datetime,
+    `grant_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `funding_status` int,
+    `language` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `owner_email` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `opportunity_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `grant_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `visibility` varchar(14),
+    `is_test_plan` int,
+    `status` varchar(8),
+    `org_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    `funder_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci
+  ),
   enabled true
 );
 

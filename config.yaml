@@ -6,6 +6,7 @@ gateways:
       port: {{ env_var('MYSQL_TCP_PORT') }}
       user: {{ env_var('MYSQL_USER') }}
       password: {{ env_var('MYSQL_PWD') }}
+      charset: utf8mb4
     test_connection:
       type: mysql
       host: {{ env_var('MYSQL_HOST') }}
@@ -13,6 +14,7 @@ gateways:
       user: {{ env_var('MYSQL_USER') }}
       password: {{ env_var('MYSQL_PWD') }}
       database: "sqlmesh_unit_tests"
+      charset: utf8mb4
 
   duckdb:
     connection:

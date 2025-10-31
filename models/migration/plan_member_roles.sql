@@ -15,11 +15,15 @@ MODEL (
 
 SELECT
   ROW_NUMBER() OVER () AS id,
-  u.id AS planMemberId,
-  15 AS memberRoleId,
-  u.id AS createdById,
-  p.created_at AS created,
-  u.id AS modifiedById,
-  p.updated_at AS modified
-FROM intermediate.plans p
-INNER JOIN intermediate.users u ON p.owner_email = u.email;
+  pm.id AS planMemberId,
+  CASE
+    WHEN pm.memberRoleId IS NOT NULL THEN pm.memberRoleId
+    ELSE rm.new_id
+  END
+  AS memberRoleId,
+  pm.createdById,
+  pm.created,
+  pm.modifiedById,
+  pm.modified
+FROM intermediate.project_members pm
+LEFT JOIN seeds.role_mappings rm ON pm.oldRoleId = rm.old_id

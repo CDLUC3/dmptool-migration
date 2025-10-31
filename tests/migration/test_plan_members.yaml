@@ -1,0 +1,88 @@
+test_plan_members:
+  model: migration.plan_members
+  vars:
+    execution_time: "2025-10-01 00:00:00"
+
+  inputs:
+    intermediate.project_members:
+      columns:
+        oldRoleId: INT
+
+      rows:
+        - id: 1
+          userId: 1
+          oldRoleId: NULL
+          memberRoleId: 15
+          projectId: 1
+          affiliationId: "https://dmptool.org/affiliations/0"
+          givenName: "Given"
+          surName: "Surname"
+          orcid: "https://orcid.org/0000-0000-0000-0001"
+          email: "owner1@example.com"
+          isPrimaryContact: 1
+          createdById: 1
+          created: "2024-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2024-01-02 00:00:00"
+
+        - id: 2
+          userId: 2
+          oldRoleId: NULL
+          memberRoleId: 15
+          projectId: 2
+          affiliationId: "https://ror.org/123abc"
+          givenName: "First"
+          surName: "Last"
+          orcid: NULL
+          email: "owner2@example.com"
+          isPrimaryContact: 1
+          createdById: 2
+          created: "2025-01-01 00:00:00"
+          modifiedById: 2
+          modified: "2025-01-02 00:00:00"
+
+        - id: 3
+          userId: NULL
+          oldRoleId: 1
+          memberRoleId: NULL
+          projectId: 2
+          affiliationId: "https://ror.org/123abcd"
+          givenName: "Captain"
+          surName: "Nemo"
+          orcid: "https://orcid.org/0000-0000-0000-0003"
+          email: "author2@example.com"
+          isPrimaryContact: 0
+          createdById: 2
+          created: "2025-01-01 00:00:00"
+          modifiedById: 2
+          modified: "2025-01-02 00:00:00"
+
+  outputs:
+    query:
+      rows:
+        - id: 1
+          planId: 1
+          projectMemberId: 1
+          isPrimaryContact: 1
+          createdById: 1
+          created: "2024-01-01 00:00:00"
+          modifiedById: 1
+          modified: "2024-01-02 00:00:00"
+
+        - id: 2
+          planId: 2
+          projectMemberId: 2
+          isPrimaryContact: 1
+          createdById: 2
+          created: "2025-01-01 00:00:00"
+          modifiedById: 2
+          modified: "2025-01-02 00:00:00"
+
+        - id: 3
+          planId: 2
+          projectMemberId: 3
+          isPrimaryContact: 0
+          createdById: 2
+          created: "2025-01-01 00:00:00"
+          modifiedById: 2
+          modified: "2025-01-02 00:00:00"
