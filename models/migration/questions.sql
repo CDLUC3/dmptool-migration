@@ -67,7 +67,7 @@ SELECT
   q.number AS old_display_order,
   ROW_NUMBER() OVER (PARTITION BY s.old_section_id ORDER BY q.number ASC) AS displayOrder,
   t.isDirty AS isDirty,
-  CASE vq.question_format_id
+  CASE q.question_format_id
     WHEN 2 THEN
       '{"type":"text","attributes":{"pattern":"^.+$","maxLength":1000,"minLength":0},"meta":{"schemaVersion":"1.0"}}'
     WHEN 3 THEN
