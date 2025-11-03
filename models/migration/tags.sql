@@ -1,7 +1,7 @@
 --   Target schema (table `tags`):
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `description` mediumtext COLLATE utf8mb4_unicode_ci,
+--  `name` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `description` mediumtext COLLATE utf8mb4_0900_ai_ci,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `createdById` int DEFAULT NULL,
 --  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -21,12 +21,21 @@ MODEL (
     modifiedById INT
   ),
   audits (
-    assert_row_count(dmp_table:='themes', blocking := false),
+    -- assert_row_count(source_db_table:='themes', blocking := false),
     unique_values(columns := (slug)),
     not_null(columns := (slug, name, created, createdById, modified, modifiedById))
   ),
   enabled true
 );
+
+JINJA_QUERY_BEGIN;
+
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
 
 SELECT
   ROW_NUMBER() OVER () AS id,
@@ -34,7 +43,9 @@ SELECT
   TRIM(t.title) AS name,
   TRIM(t.description) AS description,
   t.created_at AS created,
-  @VAR('super_admin_id') AS createdById,
+  (SELECT id FROM default_super_admin) AS createdById,
   t.updated_at AS modified,
-  @VAR('super_admin_id') AS modifiedById
-FROM dmp.themes AS t;
+  (SELECT id FROM default_super_admin) AS modifiedById
+FROM {{ var('source_db') }}.themes AS t;
+
+JINJA_END;

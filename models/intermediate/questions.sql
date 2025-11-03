@@ -12,16 +12,7 @@ MODEL (
   )
 );
 
-WITH ordered_old AS (
-  SELECT
-    s.id AS old_section_id,
-    q.id AS old_question_id,
-    q.created_at AS old_created_at,
-    LOWER(TRIM(q.text)) AS text,
-    t.family_id AS family_id,
-    ROW_NUMBER() OVER (PARTITION BY s.id ORDER BY q.number) AS order_rank
-
-)
+JINJA_QUERY_BEGIN;
 
 SELECT
   s.old_template_id,
@@ -29,5 +20,7 @@ SELECT
   q.id AS old_question_id,
   q.created_at AS old_created_at,
   s.publishable
-FROM dmp.questions q
+FROM {{ var('source_db') }}.questions q
   JOIN intermediate.sections s ON q.section_id = s.old_section_id;
+
+JINJA_END;

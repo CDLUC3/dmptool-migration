@@ -1,8 +1,8 @@
 --   Target schema (table `researchDomains`):
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `uri` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `description` varchar(255) COLLATE utf8mb4_unicode_ci,
+--  `name` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `uri` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `description` varchar(255) COLLATE utf8mb4_0900_ai_ci,
 --  `parentResearchDomainId` int,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `createdById` int DEFAULT NULL,
@@ -30,6 +30,15 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
   rd.id,
   REPLACE(LOWER(TRIM(rd.label)), ' ', '-') AS name,
@@ -37,7 +46,9 @@ SELECT
   TRIM(rd.label) AS description,
   rd.parent_id AS parentResearchDomainId,
   rd.created_at AS created,
-  @VAR('super_admin_id') AS createdById,
+  (SELECT id FROM default_super_admin) AS createdById,
   rd.updated_at AS modified,
-  @VAR('super_admin_id') AS modifiedById
-FROM dmp.research_domains AS rd;
+  (SELECT id FROM default_super_admin) AS modifiedById
+FROM {{ var('source_db') }}.research_domains AS rd;
+
+JINJA_END;

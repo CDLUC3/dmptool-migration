@@ -1,8 +1,8 @@
 -- Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `templateId` int NOT NULL,
---  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `text` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `url` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `text` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,
@@ -14,7 +14,7 @@ MODEL (
   columns (
     id INT UNSIGNED NOT NULL,
     templateId INT NOT NULL,
-    linkType VARCHAR(10) NOT NULL DEFAULT 'FUNDER',
+    linkType VARCHAR(16) NOT NULL DEFAULT 'FUNDER',
     url VARCHAR(255),
     text VARCHAR(255),
     createdById INT UNSIGNED NOT NULL,

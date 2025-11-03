@@ -1,8 +1,8 @@
 -- Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `affiliationId` int NOT NULL,
---  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `text` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `url` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `text` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,
@@ -27,6 +27,15 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
   ROW_NUMBER() OVER (ORDER BY o.id ASC, links.link_order ASC) AS id,
   CASE
@@ -35,12 +44,12 @@ SELECT
   END AS affiliationId,
   TRIM(links.link) AS url,
   TRIM(links.text) AS text,
-  @VAR('super_admin_id') AS createdById,
+  (SELECT id FROM default_super_admin) AS createdById,
   o.created_at AS created,
-  @VAR('super_admin_id') AS modifiedById,
+  (SELECT id FROM default_super_admin) AS modifiedById,
   o.updated_at AS modified
-FROM dmp.orgs o
-LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
+FROM {{ var('source_db') }}.orgs o
+LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
 JOIN JSON_TABLE(
   o.links,
   '$.org[*]'
@@ -50,3 +59,5 @@ JOIN JSON_TABLE(
     text VARCHAR(255) PATH '$.text'
   )
 ) AS links;
+
+JINJA_END;

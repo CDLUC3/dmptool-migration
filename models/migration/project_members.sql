@@ -3,6 +3,7 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
+    old_plan_id INT UNSIGNED NOT NULL,
     projectId INT UNSIGNED NOT NULL,
     affiliationId VARCHAR(255),
     givenName VARCHAR(255),
@@ -18,18 +19,27 @@ MODEL (
   enabled true
 );
 
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+)
+
 SELECT
-  u.id,
-  p.id AS projectId,
+  ROW_NUMBER() OVER (ORDER BY p.id ASC) AS id,
+  p.id AS old_plan_id,
+  np.id AS projectId,
   u.org_id AS affiliationId,
   u.firstname AS givenName,
   u.surname AS surName,
   u.orcid AS orcid,
   p.owner_email AS email,
-  u.id AS createdById,
+  COALESCE(u.id, (SELECT id FROM default_super_admin)) AS createdById,
   u.created_at AS created,
-  u.id AS modifiedById,
+  COALESCE(u.id, (SELECT id FROM default_super_admin)) AS modifiedById,
   u.updated_at AS modified,
   TRUE AS isPrimaryContact
 FROM intermediate.plans p
-INNER JOIN intermediate.users u ON p.owner_email = u.email;
+LEFT JOIN intermediate.users u ON p.owner_email = u.email
+LEFT JOIN migration.projects np ON p.id = np.old_plan_id;

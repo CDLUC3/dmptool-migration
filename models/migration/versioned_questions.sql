@@ -3,11 +3,11 @@
 --  `versionedTemplateId` int NOT NULL,
 --  `versionedSectionId` int NOT NULL,
 --  `questionId` int NOT NULL,
---  `questionText` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `questionText` mediumtext COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `json` json DEFAULT NULL,
---  `requirementText` mediumtext COLLATE utf8mb4_unicode_ci,
---  `guidanceText` mediumtext COLLATE utf8mb4_unicode_ci,
---  `sampleText` mediumtext COLLATE utf8mb4_unicode_ci,
+--  `requirementText` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `guidanceText` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `sampleText` mediumtext COLLATE utf8mb4_0900_ai_ci,
 --  `required` tinyint(1) NOT NULL DEFAULT '0',
 --  `displayOrder` int NOT NULL,
 --  `useSampleTextAsDefault` tinyint(1) NOT NULL DEFAULT '0',
@@ -47,6 +47,8 @@ MODEL (
 -- so we temporarily increase the group concat limit
 SET SESSION group_concat_max_len = 1048576;
 
+JINJA_QUERY_BEGIN;
+
 WITH root_questions AS (
   SELECT
     sectionId,
@@ -65,11 +67,11 @@ SELECT
     rq.questionId AS questionId,
     TRIM(vq.text) AS questionText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
-     FROM dmp.annotations a
+     FROM {{ var('source_db') }}.annotations a
      WHERE a.question_id = vq.id AND a.org_id = intt.old_org_id AND a.type = 0
     ) AS sampleText,
     (SELECT GROUP_CONCAT(TRIM(a.text) SEPARATOR '<br>')
-     FROM dmp.annotations a
+     FROM {{ var('source_db') }}.annotations a
      WHERE a.question_id = vq.id AND a.org_id = intt.old_org_id AND a.type = 1
     ) AS guidanceText,
     CASE vq.question_format_id
@@ -78,114 +80,58 @@ SELECT
       WHEN 3 THEN
         CONCAT(
           '{"type":"radioButtons","options":[',
-          CONCAT(
-            GROUP_CONCAT(
-              CONCAT(
-                '{"label":"',
-                CONCAT(
-                  REPLACE(qo.text, '"', '\"'),
-                  CONCAT(
-                    '","value":"',
-                    CONCAT(
-                      REPLACE(qo.text, '"', '\"'),
-                      CONCAT(
-                        '","selected":',
-                        CONCAT(
-                          CASE WHEN qo.is_default = 1 THEN true ELSE false END,
-                          '}'
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            ORDER BY qo.number),
-            '],"meta":{"schemaVersion":"1.0"}}'
-          )
+          GROUP_CONCAT(
+            '{"label":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","value":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","selected":',
+            CASE WHEN qo.is_default = 1 THEN true ELSE false END,
+            '}'
+          ORDER BY qo.number),
+          '],"meta":{"schemaVersion":"1.0"}}'
         )
       WHEN 4 THEN
         CONCAT(
           '{"type":"checkBoxes","options":[',
-          CONCAT(
-            GROUP_CONCAT(
-              CONCAT(
-                '{"label":"',
-                CONCAT(
-                  REPLACE(qo.text, '"', '\"'),
-                  CONCAT(
-                    '","value":"',
-                    CONCAT(
-                      REPLACE(qo.text, '"', '\"'),
-                      CONCAT(
-                        '","checked":',
-                        CONCAT(
-                          CASE WHEN qo.is_default = 1 THEN true ELSE false END,
-                          '}'
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            ORDER BY qo.number),
-            '],"meta":{"schemaVersion":"1.0"}}'
-          )
+          GROUP_CONCAT(
+            '{"label":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","value":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","checked":',
+            CASE WHEN qo.is_default = 1 THEN true ELSE false END,
+            '}'
+          ORDER BY qo.number),
+          '],"meta":{"schemaVersion":"1.0"}}'
         )
       WHEN 5 THEN
         CONCAT(
           '{"type":"selectBox","attributes":{"multiple":0},"options":[',
-          CONCAT(
-            GROUP_CONCAT(
-              CONCAT(
-                '{"label":"',
-                CONCAT(
-                  REPLACE(qo.text, '"', '\"'),
-                  CONCAT(
-                    '","value":"',
-                    CONCAT(
-                      REPLACE(qo.text, '"', '\"'),
-                      CONCAT(
-                        '","selected":',
-                        CONCAT(
-                          CASE WHEN qo.is_default = 1 THEN true ELSE false END,
-                          '}'
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            ORDER BY qo.number),
-            '],"meta":{"schemaVersion":"1.0"}}'
-          )
+          GROUP_CONCAT(
+            '{"label":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","value":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","selected":',
+            CASE WHEN qo.is_default = 1 THEN true ELSE false END,
+            '}'
+          ORDER BY qo.number),
+          '],"meta":{"schemaVersion":"1.0"}}'
         )
       WHEN 6 THEN
         CONCAT(
           '{"type":"multiselectBox","attributes":{"multiple":1},"options":[',
-          CONCAT(
-            GROUP_CONCAT(
-              CONCAT(
-                '{"label":"',
-                CONCAT(
-                  REPLACE(qo.text, '"', '\"'),
-                  CONCAT(
-                    '","value":"',
-                    CONCAT(
-                      REPLACE(qo.text, '"', '\"'),
-                      CONCAT(
-                        '","selected":',
-                        CONCAT(
-                          CASE WHEN qo.is_default = 1 THEN true ELSE false END,
-                          '}'
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            ORDER BY qo.number),
-            '],"meta":{"schemaVersion":"1.0"}}'
-          )
+          GROUP_CONCAT(
+            '{"label":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","value":"',
+            REPLACE(qo.text, '"', '\"'),
+            '","selected":',
+            CASE WHEN qo.is_default = 1 THEN true ELSE false END,
+            '}'
+          ORDER BY qo.number),
+          '],"meta":{"schemaVersion":"1.0"}}'
         )
       ELSE
         '{"type":"textArea","attributes":{"cols":20,"rows":2,"asRichText":true},"meta":{"schemaVersion":"1.0"}}'
@@ -196,8 +142,8 @@ SELECT
     vs.createdById,
     vq.updated_at AS modified,
     vs.modifiedById
-FROM dmp.questions AS vq
-  LEFT JOIN dmp.question_options AS qo ON vq.id = qo.question_id
+FROM {{ var('source_db') }}.questions AS vq
+  LEFT JOIN {{ var('source_db') }}.question_options AS qo ON vq.id = qo.question_id
   JOIN intermediate.questions AS intq ON vq.id = intq.old_question_id
     JOIN intermediate.sections AS ints ON ints.old_section_id = intq.old_section_id
       JOIN intermediate.templates AS intt ON ints.old_template_id = intt.old_template_id
@@ -209,3 +155,5 @@ GROUP BY vq.created_at, vs.versionedTemplateId, vq.id, vs.id, rq.questionId, vq.
          vq.number, intt.old_org_id, vq.question_format_id,
          vs.createdById, vs.modifiedById, vq.updated_at
 ORDER BY vq.created_at ASC;
+
+JINJA_END;

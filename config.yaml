@@ -2,12 +2,15 @@ gateways:
   mysql:
     connection:
       type: mysql
+      charset: utf8mb4
       host: {{ env_var('MYSQL_HOST') }}
       port: {{ env_var('MYSQL_TCP_PORT') }}
       user: {{ env_var('MYSQL_USER') }}
       password: {{ env_var('MYSQL_PWD') }}
+
     test_connection:
       type: mysql
+      charset: utf8mb4
       host: {{ env_var('MYSQL_HOST') }}
       port: {{ env_var('MYSQL_TCP_PORT') }}
       user: {{ env_var('MYSQL_USER') }}
@@ -27,5 +30,7 @@ model_defaults:
   start: 2025-10-02
 
 variables:
-  super_admin_id: 1
   time_zone: '+00:00'
+  start_ds: '2000-01-01'
+  end_ds: '2026-12-31'
+  source_db: 'source_db'
