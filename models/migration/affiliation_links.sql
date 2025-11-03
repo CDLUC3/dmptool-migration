@@ -1,8 +1,8 @@
 -- Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `affiliationId` int NOT NULL,
---  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `text` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `url` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `text` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,
@@ -27,6 +27,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -46,8 +48,8 @@ SELECT
   o.created_at AS created,
   (SELECT id FROM default_super_admin) AS modifiedById,
   o.updated_at AS modified
-FROM source_db.orgs o
-LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id
+FROM {{ var('source_db') }}.orgs o
+LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
 JOIN JSON_TABLE(
   o.links,
   '$.org[*]'
@@ -57,3 +59,5 @@ JOIN JSON_TABLE(
     text VARCHAR(255) PATH '$.text'
   )
 ) AS links;
+
+JINJA_END;

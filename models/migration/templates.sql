@@ -1,15 +1,15 @@
 --  Target schema (table `templates`):
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `sourceTemplateId` int DEFAULT NULL,
---  `name` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
---  `description` mediumtext COLLATE utf8mb4_unicode_ci,
---  `ownerId` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `latestPublishVisibility` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `latestPublishVersion` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `name` mediumtext COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `description` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `ownerId` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `latestPublishVisibility` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `latestPublishVersion` varchar(16) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `latestPublishDate` timestamp NULL DEFAULT NULL,
 --  `isDirty` tinyint(1) NOT NULL DEFAULT '1',
 --  `bestPractice` tinyint(1) NOT NULL DEFAULT '0',
---  `languageId` char(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en-US',
+--  `languageId` char(5) COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'en-US',
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,
@@ -43,6 +43,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -68,7 +70,7 @@ SELECT
   TRIM(t.description) AS description,
   intt.best_practice AS bestPractice,
   CASE WHEN intt.family_id == lp.family_id
-    CASE WHEN lp.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END
+    CASE WHEN lp.visibility = 0 THEN 'ORGANIZATION' ELSE 'PUBLIC' END
     ELSE 'PUBLIC'
   END AS latestPublishVisibility,
   (intt.is_published = 0) AS isDirty,
@@ -87,15 +89,12 @@ SELECT
   t.created_at AS created,
   COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS modifiedById,
   t.updated_at AS modified
-FROM source_db.templates AS t
+FROM {{ var('source_db') }}.templates AS t
   LEFT JOIN latest_published AS lp ON t.family_id = lp.family_id
   JOIN intermediate.templates AS intt ON t.id = intt.old_template_id
-    LEFT JOIN source_db.registry_orgs AS ro ON t.org_id = ro.org_id
+    LEFT JOIN {{ var('source_db') }}.registry_orgs AS ro ON t.org_id = ro.org_id
 WHERE t.customization_of IS NULL
   AND intt.is_current_template
 ORDER BY t.created_at ASC;
 
--- Reconciliation queries:
--- SELECT COUNT(id) from migration.templates; #477
---
--- SELECT COUNT(DISTINCT family_id) FROM source_db.templates WHERE customization_of IS NULL; #477
+JINJA_END;

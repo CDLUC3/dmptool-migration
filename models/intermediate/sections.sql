@@ -11,12 +11,16 @@ MODEL (
   )
 );
 
+JINJA_QUERY_BEGIN;
+
 SELECT
   t.id AS old_template_id,
   s.id AS old_section_id,
   s.created_at AS old_created_at,
   CASE WHEN it.is_published = 1 OR it.was_published = 1 THEN TRUE ELSE FALSE END AS publishable
-FROM source_db.sections s
-  JOIN source_db.phases p ON s.phase_id = p.id
-    JOIN source_db.templates t ON p.template_id = t.id
+FROM {{ var('source_db') }}.sections s
+  JOIN {{ var('source_db') }}.phases p ON s.phase_id = p.id
+    JOIN {{ var('source_db') }}.templates t ON p.template_id = t.id
       LEFT JOIN intermediate.templates it ON t.id = it.old_template_id;
+
+JINJA_END;

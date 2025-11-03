@@ -15,13 +15,15 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 SELECT
   ROW_NUMBER() OVER (ORDER BY t.id ASC, links.link_order ASC) AS id,
   t.id AS old_template_id,
   'FUNDER' AS linkType,
   TRIM(links.link) AS url,
   CASE WHEN links.text IS NULL OR TRIM(links.text) = '' THEN TRIM(links.link) ELSE TRIM(links.text) END AS text
-FROM source_db.templates t
+FROM {{ var('source_db') }}.templates t
   JOIN JSON_TABLE(
     t.links,
     '$.funder[*]'
@@ -41,7 +43,7 @@ SELECT
   'SAMPLE_PLAN' AS linkType,
   TRIM(links.link) AS url,
   CASE WHEN links.text IS NULL OR TRIM(links.text) = '' THEN TRIM(links.link) ELSE TRIM(links.text) END AS text
-FROM source_db.templates t
+FROM {{ var('source_db') }}.templates t
   JOIN JSON_TABLE(
     t.links,
     '$.sample_plan[*]'
@@ -52,3 +54,5 @@ FROM source_db.templates t
     )
   ) AS links
 WHERE t.customization_of IS NULL;
+
+JINJA_END;

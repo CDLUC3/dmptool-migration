@@ -3,9 +3,9 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
-    label VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    uri VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    description VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    label VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    uri VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    description VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
     displayOrder INT NOT NULL,
     isDefault TINYINT(1) NOT NULL DEFAULT 0,
     createdById INT UNSIGNED NOT NULL,

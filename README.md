@@ -38,7 +38,7 @@ mysqldump -h [host] -P [port] -u [username] -p [database] \
   > ~/source_db.sql
 
 # Create the target database on the new server
-mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE source_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE source_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
 
 # Import the source database dump into the new server
 mysql -u [username] -p -P [port] -h [host] source_db < ~/source_db.sql
@@ -102,3 +102,15 @@ sqlmesh plan
 ## Load the transformed data into the target database
 
 Munually run the SQL statements in the [Final Migrations file](docs/FinalMigrationSteps.sql) against the target database to load the transformed data.
+
+## Validation
+
+Load the application and login as the 2 test users created during the migration process:
+- Super Admin: `Password123$9`
+- Admin: `Password123$8`
+
+Review the templates, plans, questions, etc. to ensure the data has been migrated correctly.
+
+## Cleanup
+
+Be sure to change the password for the default/test Super Admin and Admin users once the migration is complete!

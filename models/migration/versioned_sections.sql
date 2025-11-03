@@ -2,10 +2,10 @@
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `versionedTemplateId` int NOT NULL,
 --  `sectionId` int NOT NULL,
---  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `introduction` mediumtext COLLATE utf8mb4_unicode_ci,
---  `requirements` mediumtext COLLATE utf8mb4_unicode_ci,
---  `guidance` mediumtext COLLATE utf8mb4_unicode_ci,
+--  `name` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `introduction` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `requirements` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `guidance` mediumtext COLLATE utf8mb4_0900_ai_ci,
 --  `displayOrder` int NOT NULL,
 --  `bestPractice` tinyint(1) NOT NULL DEFAULT '0',
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -38,6 +38,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH root_sections AS (
   SELECT
     templateId,
@@ -62,8 +64,8 @@ SELECT
   vt.createdById,
   vs.updated_at AS modified,
   vt.modifiedById
-FROM source_db.sections AS vs
-  JOIN source_db.phases AS p ON vs.phase_id = p.id
+FROM {{ var('source_db') }}.sections AS vs
+  JOIN {{ var('source_db') }}.phases AS p ON vs.phase_id = p.id
   JOIN intermediate.sections AS ints ON vs.id = ints.old_section_id
   JOIN migration.versioned_templates AS vt ON p.template_id = vt.old_template_id
     JOIN root_sections AS rs ON vt.template_id = rs.templateId
@@ -71,9 +73,4 @@ FROM source_db.sections AS vs
                                       OR (vs.number = rs.old_display_order))
 ORDER BY vs.created_at ASC;
 
--- Reconciliation queries:
--- SELECT COUNT(id) from migration.versioned_sections; #6,862
---
--- SELECT COUNT(DISTINCT s.id) FROM source_db.templates t INNER JOIN source_db.phases p ON t.id = p.template_id
--- 	INNER JOIN source_db.sections s ON p.id = s.phase_id WHERE t.customization_of IS NULL AND (t.published = 1
---   OR t.id != (SELECT MAX(tmplt.id) FROM source_db.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #6,261
+JINJA_END;

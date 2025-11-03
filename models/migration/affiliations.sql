@@ -1,27 +1,27 @@
 --  Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `uri` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `provenance` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DMPTOOL',
---  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `displayName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `searchName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `uri` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `provenance` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'DMPTOOL',
+--  `name` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `displayName` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `searchName` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `funder` tinyint(1) NOT NULL DEFAULT '0',
---  `fundrefId` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `homepage` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `fundrefId` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `homepage` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `acronyms` json DEFAULT NULL,
 --  `aliases` json DEFAULT NULL,
 --  `types` json DEFAULT NULL,
---  `logoURI` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `logoName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `contactName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `contactEmail` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `ssoEntityId` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `logoURI` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `logoName` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `contactName` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `contactEmail` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `ssoEntityId` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `feedbackEnabled` tinyint(1) NOT NULL DEFAULT '0',
---  `feedbackMessage` text COLLATE utf8mb4_unicode_ci,
+--  `feedbackMessage` text COLLATE utf8mb4_0900_ai_ci,
 --  `feedbackEmails` json DEFAULT NULL,
 --  `managed` tinyint(1) NOT NULL DEFAULT '0',
 --  `active` tinyint(1) NOT NULL DEFAULT '1',
---  `apiTarget` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `apiTarget` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,
@@ -32,28 +32,28 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
-    uri VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    provenance VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    name VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    displayName VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    searchName VARCHAR(512) COLLATE utf8mb4_unicode_ci ,
+    uri VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    provenance VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    name VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    displayName VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    searchName VARCHAR(512) COLLATE utf8mb4_0900_ai_ci ,
     funder BOOLEAN NOT NULL DEFAULT 0,
-    fundrefId VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
-    homepage VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
-    acronyms JSON COLLATE utf8mb4_unicode_ci ,
-    aliases JSON COLLATE utf8mb4_unicode_ci ,
-    types JSON COLLATE utf8mb4_unicode_ci ,
-    logoURI VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
-    logoName VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
-    contactName VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
-    contactEmail VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
-    ssoEntityId VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    fundrefId VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
+    homepage VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
+    acronyms JSON COLLATE utf8mb4_0900_ai_ci ,
+    aliases JSON COLLATE utf8mb4_0900_ai_ci ,
+    types JSON COLLATE utf8mb4_0900_ai_ci ,
+    logoURI VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
+    logoName VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
+    contactName VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
+    contactEmail VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
+    ssoEntityId VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
     feedbackEnabled BOOLEAN NOT NULL DEFAULT 0,
-    feedbackMessage TEXT COLLATE utf8mb4_unicode_ci ,
-    feedbackEmails JSON COLLATE utf8mb4_unicode_ci ,
+    feedbackMessage TEXT COLLATE utf8mb4_0900_ai_ci ,
+    feedbackEmails JSON COLLATE utf8mb4_0900_ai_ci ,
     managed BOOLEAN NOT NULL DEFAULT 0,
     active BOOLEAN NOT NULL DEFAULT 1,
-    apiTarget VARCHAR(255) COLLATE utf8mb4_unicode_ci ,
+    apiTarget VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
     createdById INT UNSIGNED NOT NULL,
     created TIMESTAMP NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
@@ -64,6 +64,8 @@ MODEL (
   ),
   enabled true
 );
+
+JINJA_QUERY_BEGIN;
 
 WITH default_super_admin AS (
   SELECT id
@@ -86,9 +88,9 @@ ror_orgs AS (
     o.feedback_enabled,
     o.feedback_msg,
     o.links
-  FROM source_db.registry_orgs ro
-  INNER JOIN source_db.orgs o ON ro.org_id = o.id
-  LEFT JOIN source_db.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
+  FROM {{ var('source_db') }}.registry_orgs ro
+  INNER JOIN {{ var('source_db') }}.orgs o ON ro.org_id = o.id
+  LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
   WHERE ro.org_id IS NOT NULL -- Selects only ROR records we are using
 ),
 
@@ -97,8 +99,8 @@ non_ror_orgs AS (
     o.*,
     i.value AS ssoEntityId
   FROM source_db.orgs o
-  LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id
-  LEFT JOIN source_db.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
+  LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
+  LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
   WHERE ro.id IS NULL -- Where no ROR org was mapped to orgs table
 ),
 
@@ -191,3 +193,5 @@ FROM (
     WHERE LOWER(ra.displayName) = LOWER(TRIM(non_ror_affiliations.name))
   )
 ) AS a;
+
+JINJA_END;

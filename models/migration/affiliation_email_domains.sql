@@ -1,7 +1,7 @@
 -- Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `affiliationId` int NOT NULL,
---  `emailDomain` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `emailDomain` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,
@@ -25,6 +25,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -47,8 +49,8 @@ email_domains AS (
     o.created_at AS created,
     (SELECT id FROM default_super_admin) AS modifiedById,
     o.updated_at AS modified
-  FROM source_db.orgs o
-  LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id
+  FROM {{ var('source_db') }}.orgs o
+  LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
 )
 
 SELECT
@@ -56,3 +58,5 @@ SELECT
   ed.*
 FROM email_domains ed
 WHERE ed.emailDomain IS NOT NULL AND ed.emailDomain != "";
+
+JINJA_END;

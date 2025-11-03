@@ -17,6 +17,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -36,6 +38,8 @@ SELECT
   d.created_at AS created,
   (SELECT id FROM default_super_admin) AS modifiedById,
   d.updated_at AS modified
-FROM source_db.departments d
-INNER JOIN source_db.orgs o ON d.org_id = o.id
-LEFT JOIN source_db.registry_orgs ro ON o.id = ro.org_id;
+FROM {{ var('source_db') }}.departments d
+INNER JOIN {{ var('source_db') }}.orgs o ON d.org_id = o.id
+LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id;
+
+JINJA_END;

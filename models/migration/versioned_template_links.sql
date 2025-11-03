@@ -1,8 +1,8 @@
 -- Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `versionedTemplateId` int NOT NULL,
---  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `text` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `url` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `text` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `createdById` int NOT NULL,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `modifiedById` int NOT NULL,

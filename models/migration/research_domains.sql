@@ -1,8 +1,8 @@
 --   Target schema (table `researchDomains`):
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `uri` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `description` varchar(255) COLLATE utf8mb4_unicode_ci,
+--  `name` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `uri` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `description` varchar(255) COLLATE utf8mb4_0900_ai_ci,
 --  `parentResearchDomainId` int,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `createdById` int DEFAULT NULL,
@@ -30,6 +30,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -47,4 +49,6 @@ SELECT
   (SELECT id FROM default_super_admin) AS createdById,
   rd.updated_at AS modified,
   (SELECT id FROM default_super_admin) AS modifiedById
-FROM source_db.research_domains AS rd;
+FROM {{ var('source_db') }}.research_domains AS rd;
+
+JINJA_END;

@@ -1,19 +1,19 @@
 --   Target schema:
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `oldPasswordHash` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `role` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RESEARCHER',
---  `givenName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `surName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `affiliationId` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `password` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `oldPasswordHash` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `role` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'RESEARCHER',
+--  `givenName` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `surName` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `affiliationId` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `acceptedTerms` tinyint(1) NOT NULL DEFAULT '0',
---  `orcid` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
---  `ssoId` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `orcid` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+--  `ssoId` varchar(255) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `locked` tinyint(1) NOT NULL DEFAULT '0',
 --  `active` tinyint(1) NOT NULL DEFAULT '1',
---  `languageId` char(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en-US',
+--  `languageId` char(5) COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'en-US',
 --  `last_sign_in` timestamp NULL DEFAULT NULL,
---  `last_sign_in_via` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+--  `last_sign_in_via` varchar(10) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
 --  `failed_sign_in_attempts` int NOT NULL DEFAULT '0',
 --  `notify_on_comment_added` tinyint(1) NOT NULL DEFAULT '1',
 --  `notify_on_template_shared` tinyint(1) NOT NULL DEFAULT '1',
@@ -34,6 +34,8 @@ MODEL (
   ),
   enabled true
 );
+
+JINJA_QUERY_BEGIN;
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY u.created_at ASC) AS id,
@@ -57,14 +59,16 @@ SELECT
     ELSE ron.ror_id
   END AS org_id,
   CASE
-    WHEN (SELECT up.perm_id FROM source_db.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
-    WHEN (SELECT COUNT(up.perm_id) FROM source_db.users_perms AS up WHERE up.user_id = u.id AND up.perm_id != 10) THEN 'ADMIN'
+    WHEN (SELECT up.perm_id FROM {{ var('source_db') }}.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
+    WHEN (SELECT COUNT(up.perm_id) FROM {{ var('source_db') }}.users_perms AS up WHERE up.user_id = u.id AND up.perm_id != 10) THEN 'ADMIN'
     ELSE 'RESEARCHER'
   END AS role
-FROM source_db.users AS u
-  LEFT JOIN source_db.languages AS l ON u.language_id = l.id
-  INNER JOIN source_db.orgs AS o ON u.org_id = o.id
-  	LEFT JOIN source_db.registry_orgs AS ro ON o.id = ro.org_id
-    LEFT JOIN source_db.registry_orgs AS ron ON o.name COLLATE utf8mb3_unicode_ci = ron.name
-  LEFT JOIN source_db.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
-  LEFT JOIN source_db.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2;
+FROM {{ var('source_db') }}.users AS u
+  LEFT JOIN {{ var('source_db') }}.languages AS l ON u.language_id = l.id
+  INNER JOIN {{ var('source_db') }}.orgs AS o ON u.org_id = o.id
+  	LEFT JOIN {{ var('source_db') }}.registry_orgs AS ro ON o.id = ro.org_id
+    LEFT JOIN {{ var('source_db') }}.registry_orgs AS ron ON o.name COLLATE utf8mb3_unicode_ci = ron.name
+  LEFT JOIN {{ var('source_db') }}.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
+  LEFT JOIN {{ var('source_db') }}.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2;
+
+JINJA_END;

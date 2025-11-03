@@ -1,7 +1,7 @@
 --   Target schema (table `tags`):
 --  `id` int NOT NULL AUTO_INCREMENT,
---  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `description` mediumtext COLLATE utf8mb4_unicode_ci,
+--  `name` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `description` mediumtext COLLATE utf8mb4_0900_ai_ci,
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `createdById` int DEFAULT NULL,
 --  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -28,6 +28,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -44,4 +46,6 @@ SELECT
   (SELECT id FROM default_super_admin) AS createdById,
   t.updated_at AS modified,
   (SELECT id FROM default_super_admin) AS modifiedById
-FROM source_db.themes AS t;
+FROM {{ var('source_db') }}.themes AS t;
+
+JINJA_END;

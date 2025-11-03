@@ -4,6 +4,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH owner_emails AS (
   SELECT
     oe.id,
@@ -13,9 +15,9 @@ WITH owner_emails AS (
       p.id,
       TRIM(u.email) AS owner_email,
       ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY r.created_at DESC) AS row_num,
-    FROM source_db.users u
-    INNER JOIN source_db.roles r ON r.user_id = u.id AND r.access = 15 AND r.active = 1
-    INNER JOIN source_db.plans p ON r.plan_id = p.id
+    FROM {{ var('source_db') }}.users u
+    INNER JOIN {{ var('source_db') }}.roles r ON r.user_id = u.id AND r.access = 15 AND r.active = 1
+    INNER JOIN {{ var('source_db') }}.plans p ON r.plan_id = p.id
   ) AS oe
   WHERE oe.row_num = 1
 )
@@ -62,14 +64,16 @@ SELECT
     WHEN funder_rors.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', funders.id)
     ELSE funder_rors.ror_id
   END AS funder_id
-FROM source_db.plans p
-LEFT JOIN source_db.roles r ON p.id = r.plan_id AND r.access = 15 AND r.active = 1
-LEFT JOIN source_db.users u ON r.user_id = u.id
-LEFT JOIN source_db.languages l ON p.language_id = l.id
-INNER JOIN source_db.orgs o ON p.org_id = o.id
-LEFT OUTER JOIN source_db.registry_orgs ro ON o.id = ro.org_id
-LEFT JOIN source_db.identifiers i ON i.id = p.grant_id
-LEFT JOIN source_db.orgs AS funders ON p.funder_id = funders.id
-LEFT OUTER JOIN source_db.registry_orgs funder_rors ON funders.id = funder_rors.org_id
+FROM {{ var('source_db') }}.plans p
+LEFT JOIN {{ var('source_db') }}.roles r ON p.id = r.plan_id AND r.access = 15 AND r.active = 1
+LEFT JOIN {{ var('source_db') }}.users u ON r.user_id = u.id
+LEFT JOIN {{ var('source_db') }}.languages l ON p.language_id = l.id
+INNER JOIN {{ var('source_db') }}.orgs o ON p.org_id = o.id
+LEFT OUTER JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
+LEFT JOIN {{ var('source_db') }}.identifiers i ON i.id = p.grant_id
+LEFT JOIN {{ var('source_db') }}.orgs AS funders ON p.funder_id = funders.id
+LEFT OUTER JOIN {{ var('source_db') }}.registry_orgs funder_rors ON funders.id = funder_rors.org_id
 LEFT JOIN owner_emails oe ON p.id = oe.id
 ORDER BY p.id;
+
+JINJA_END;

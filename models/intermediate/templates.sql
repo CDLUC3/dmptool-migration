@@ -20,6 +20,8 @@ MODEL (
   )
 );
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -31,8 +33,8 @@ org_creator AS (
   SELECT
     u.org_id,
     COALESCE(mu.id, (SELECT id FROM default_super_admin)) AS user_id
-  FROM source_db.users AS u
-    INNER JOIN source_db.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
+  FROM {{ var('source_db') }}.users AS u
+    INNER JOIN {{ var('source_db') }}.users_perms AS up ON u.id = up.user_id AND up.perm_id = 6
       LEFT JOIN intermediate.users AS mu ON u.email = mu.email
   WHERE u.org_id IS NOT NULL
   QUALIFY ROW_NUMBER() OVER (PARTITION BY u.org_id ORDER BY u.created_at DESC) = 1
@@ -40,13 +42,13 @@ org_creator AS (
 
 current_ids AS (
   SELECT t.family_id, MAX(t.id) AS current_id
-  FROM source_db.templates AS t
+  FROM {{ var('source_db') }}.templates AS t
   GROUP BY t.family_id
 ),
 
 version_counts AS (
   SELECT t.family_id, COUNT(*) AS version_count
-  FROM source_db.templates AS t
+  FROM {{ var('source_db') }}.templates AS t
   GROUP BY t.family_id
 )
 
@@ -71,7 +73,9 @@ SELECT
             FROM current_ids AS ci
             WHERE ci.family_id = t.family_id)) AS is_current_template,
   oc.user_id AS new_created_by_id
-FROM source_db.templates t
+FROM {{ var('source_db') }}.templates t
   LEFT JOIN current_ids AS ci ON ci.family_id = t.family_id
   LEFT JOIN version_counts AS vc ON vc.family_id = t.family_id
   LEFT JOIN org_creator oc ON t.org_id = oc.org_id
+
+JINJA_END;

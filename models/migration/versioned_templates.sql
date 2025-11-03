@@ -2,16 +2,16 @@
 --  `id` int NOT NULL AUTO_INCREMENT,
 --  `templateId` int NOT NULL,
 --  `active` tinyint(1) NOT NULL DEFAULT '0',
---  `version` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `versionType` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
+--  `version` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `versionType` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'DRAFT',
 --  `versionedById` int NOT NULL,
---  `comment` mediumtext COLLATE utf8mb4_unicode_ci,
---  `name` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
---  `description` mediumtext COLLATE utf8mb4_unicode_ci,
---  `ownerId` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
---  `visibility` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
+--  `comment` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `name` mediumtext COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `description` mediumtext COLLATE utf8mb4_0900_ai_ci,
+--  `ownerId` varchar(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+--  `visibility` varchar(16) COLLATE utf8mb4_0900_ai_ci NOT NULL,
 --  `bestPractice` tinyint(1) NOT NULL DEFAULT '0',
---  `languageId` char(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en-US',
+--  `languageId` char(5) COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'en-US',
 --  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  `createdById` int NOT NULL,
 --  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -58,6 +58,8 @@ AUDIT (name dmptool_only_one_active_version_per_template);
   GROUP BY template_id
   HAVING COUNT(*) > 1;
 
+JINJA_QUERY_BEGIN;
+
 WITH default_super_admin AS (
   SELECT id
   FROM intermediate.users
@@ -82,7 +84,7 @@ SELECT
     WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', vt.org_id)
     ELSE ro.ror_id
   END AS ownerId,
-  CASE WHEN vt.visibility = 0 THEN 'ORGANIZATIONAL' ELSE 'PUBLIC' END AS visibility,
+  CASE WHEN vt.visibility = 0 THEN 'ORGANIZATION' ELSE 'PUBLIC' END AS visibility,
   (vt.is_default = 1) AS bestPractice,
   CASE
     WHEN vt.locale IN ('pt', 'pt-BR') OR vt.family_id IN (SELECT pt.family_id FROM intermediate.templates_pt_br AS pt) THEN 'pt-BR'
@@ -92,15 +94,11 @@ SELECT
   vt.created_at AS created,
   COALESCE(intt.new_created_by_id, (SELECT id FROM default_super_admin)) AS modifiedById,
   vt.updated_at AS modified
-FROM source_db.templates AS vt
+FROM {{ var('source_db') }}.templates AS vt
   JOIN migration.templates AS t ON vt.family_id = t.old_family_id
   JOIN intermediate.templates AS intt ON vt.id = intt.old_template_id
-    LEFT JOIN source_db.registry_orgs AS ro ON vt.org_id = ro.org_id
+    LEFT JOIN {{ var('source_db') }}.registry_orgs AS ro ON vt.org_id = ro.org_id
 WHERE vt.customization_of IS NULL AND (intt.is_published OR intt.was_published)
 ORDER BY vt.created_at ASC;
 
--- Reconciliation queries:
--- SELECT COUNT(id) FROM migration.versioned_templates; #948
---
--- SELECT COUNT(DISTINCT t.id) FROM source_db.templates t WHERE t.customization_of IS NULL AND (t.published = 1
---   OR t.id != (SELECT MAX(tmplt.id) FROM source_db.templates AS tmplt WHERE tmplt.family_id = t.family_id)); #948
+JINJA_END;
