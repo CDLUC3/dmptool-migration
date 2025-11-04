@@ -1,14 +1,18 @@
-test_templates:
+test_versioned_templates:
   model: migration.versioned_templates
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     dmp.registry_orgs:
       rows:
         - id: 1
           org_id: 2
           ror_id: "https://ror.org/xxxxxxxx"
 
-    migration.templates_pt_br:
+    intermediate.templates_pt_br:
       columns:
         family_id: INT
       rows:
@@ -306,7 +310,7 @@ test_templates:
           version: "v1"
           versionType: 'PUBLISHED'
           versionedById: 9876
-          visibility: "ORGANIZATIONAL"
+          visibility: "ORGANIZATION"
           comment: null
           name: "Published Organizational Template"
           description: "<p class=\"Normal\">Test published organizational template</p>"

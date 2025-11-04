@@ -2,6 +2,10 @@ test_affiliation_links:
   model: migration.affiliation_links
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     dmp.orgs:
       rows:
         - id: 1

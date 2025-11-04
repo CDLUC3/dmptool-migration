@@ -45,6 +45,7 @@ test_projects:
     query:
       rows:
         - id: 1
+          old_plan_id: 1
           title: "Plan 1"
           abstractText: "Description 1"
           researchDomainId: 1
@@ -57,6 +58,7 @@ test_projects:
           modified: "2024-01-02 00:00:00"
 
         - id: 2
+          old_plan_id: 2
           title: "Plan 2"
           abstractText: "Description 2"
           researchDomainId: 2

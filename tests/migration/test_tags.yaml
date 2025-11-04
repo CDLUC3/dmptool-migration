@@ -4,6 +4,10 @@ test_tags:
     execution_time: "2025-10-08 00:00:00+00:00"
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     # Themes
     dmp.themes:
       rows:

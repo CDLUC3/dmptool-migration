@@ -4,6 +4,10 @@ test_research_domains:
     execution_time: "2025-10-07 00:00:00+00:00"
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     # Research domains
     dmp.research_domains:
       rows:

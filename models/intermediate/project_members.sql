@@ -7,7 +7,14 @@ MODEL (
   enabled true
 );
 
-WITH primary_project_members AS (
+WITH default_super_admin AS (
+  SELECT id
+  FROM intermediate.users
+  WHERE role = 'SUPERADMIN'
+  ORDER BY id DESC LIMIT 1
+),
+
+primary_project_members AS (
   SELECT
     ROW_NUMBER() OVER () AS id,
     u.id AS userId,
@@ -19,9 +26,9 @@ WITH primary_project_members AS (
     u.surname AS surName,
     u.orcid AS orcid,
     p.owner_email AS email,
-    u.id AS createdById,
+    COALESCE(u.id, (SELECT id FROM default_super_admin)) AS createdById,
     u.created_at AS created,
-    u.id AS modifiedById,
+    COALESCE(u.id, (SELECT id FROM default_super_admin)) AS modifiedById,
     u.updated_at AS modified,
     1 AS isPrimaryContact
   FROM intermediate.plans p
@@ -33,12 +40,19 @@ max_user_id AS (
   FROM primary_project_members u
 ),
 
+default_member_role AS (
+  SELECT id
+  FROM migration.member_roles
+  WHERE isDefault = 1
+  LIMIT 1
+),
+
 other_project_members AS (
   SELECT
     m.max_id + ROW_NUMBER() OVER () AS id,
     NULL AS userId,
     c.roles AS oldRoleId,
-    NULL AS memberRoleId,
+    (SELECT id FROM default_member_role) AS memberRoleId,
     c.plan_id AS projectId,
     c.affiliation_id AS affiliationId,
     c.first_name AS givenName,

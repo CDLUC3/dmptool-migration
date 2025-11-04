@@ -4,6 +4,16 @@ test_project_members:
     execution_time: "2025-10-01 00:00:00"
 
   inputs:
+    migration.member_roles:
+      columns:
+        id: INT
+        isDefault: BOOLEAN
+        createdById: INT
+        modifiedById: INT
+      rows:
+        - id: 1
+          isDefault: 1
+
     intermediate.plans:
       rows:
         - id: 1
@@ -84,7 +94,7 @@ test_project_members:
         - id: 3
           userId: NULL
           oldRoleId: 1
-          memberRoleId: NULL
+          memberRoleId: 1
           projectId: 2
           affiliationId: "https://ror.org/123abcd"
           givenName: "Captain"

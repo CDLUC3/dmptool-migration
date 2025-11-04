@@ -2,6 +2,10 @@ test_templates:
   model: migration.templates
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     dmp.orgs:
       rows:
         - id: 1
@@ -55,23 +59,23 @@ test_templates:
         - user_id: 4
           perm_id: 6
 
-    migration.templates_pt_br:
+    intermediate.templates_pt_br:
       rows:
         - family_id: 12345
 
-    migration.users:
-      rows:
-        - id: 12345
-          email: "admin@example.com"
-
-        - id: 9876
-          email: "admin2@example.com"
-
-        - id: 67890
-          email: "tester2@example.com"
-
-        - id: 54321
-          email: "super@example.com"
+#    migration.users:
+#      rows:
+#        - id: 12345
+##          email: "admin@example.com"
+#
+#        - id: 9876
+##          email: "admin2@example.com"
+#
+#        - id: 67890
+##          email: "tester2@example.com"
+#
+#        - id: 54321
+##          email: "super@example.com"
 
     intermediate.templates:
       rows:
@@ -312,7 +316,7 @@ test_templates:
           name: "Published Organizational Template"
           description: "<p class=\"Normal\">Test published organizational template</p>"
           bestPractice: false
-          latestPublishVisibility: "ORGANIZATIONAL"
+          latestPublishVisibility: "ORGANIZATION"
           isDirty: false
           latestPublishVersion: "v1"
           latestPublishDate: "2025-09-15 11:33:17"
@@ -346,7 +350,7 @@ test_templates:
           name: "Unpublished Template"
           description: "<p class=\"Normal\">Test unpublished template</p>"
           bestPractice: false
-          latestPublishVisibility: null
+          latestPublishVisibility: "PUBLIC" # TODO: this was originally null?
           isDirty: true
           latestPublishVersion: null
           latestPublishDate: null

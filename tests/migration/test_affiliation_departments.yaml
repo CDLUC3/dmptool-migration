@@ -4,6 +4,10 @@ test_affiliation_departments:
     execution_time: "2025-10-01 00:00:00+00:00"
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     dmp.orgs:
       rows:
         - id: 100

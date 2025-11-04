@@ -98,7 +98,7 @@ non_ror_orgs AS (
   SELECT
     o.*,
     i.value AS ssoEntityId
-  FROM source_db.orgs o
+  FROM {{ var('source_db') }}.orgs o
   LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
   LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
   WHERE ro.id IS NULL -- Where no ROR org was mapped to orgs table
