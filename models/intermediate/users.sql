@@ -37,7 +37,7 @@ MODEL (
 
 JINJA_QUERY_BEGIN;
 
-SELECT
+SELECT DISTINCT
   ROW_NUMBER() OVER (ORDER BY u.created_at ASC) AS id,
   TRIM(u.firstname) AS firstname,
   TRIM(u.surname) AS surname,
@@ -48,15 +48,15 @@ SELECT
   u.active,
   u.last_sign_in_at,
   l.abbreviation AS language,
-  TRIM(orc.value) AS orcid,
-  TRIM(sso.value) AS sso_id,
+  TRIM(MAX(orc.value)) AS orcid,
+  TRIM(MAX(sso.value)) AS sso_id,
   false AS locked,
   TRIM(encrypted_password) AS `password`,
   CASE
     WHEN u.org_id IS NULL THEN NULL
-    WHEN ro.id IS NULL and ron.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
-    WHEN ro.ror_id IS NOT NULL THEN ro.ror_id
-    ELSE ron.ror_id
+    WHEN MAX(ro.id) IS NULL and MAX(ron.id) IS NULL THEN CONCAT('https://dmptool.org/affiliations/', o.id)
+    WHEN MAX(ro.ror_id) IS NOT NULL THEN MAX(ro.ror_id)
+    ELSE MAX(ron.ror_id)
   END AS org_id,
   CASE
     WHEN (SELECT up.perm_id FROM {{ var('source_db') }}.users_perms AS up WHERE up.user_id = u.id AND up.perm_id = 10) THEN 'SUPERADMIN'
@@ -69,6 +69,7 @@ FROM {{ var('source_db') }}.users AS u
   	LEFT JOIN {{ var('source_db') }}.registry_orgs AS ro ON o.id = ro.org_id
     LEFT JOIN {{ var('source_db') }}.registry_orgs AS ron ON o.name COLLATE utf8mb3_unicode_ci = ron.name
   LEFT JOIN {{ var('source_db') }}.identifiers orc ON orc.identifiable_type = 'User' AND orc.identifiable_id = u.id AND orc.identifier_scheme_id = 1
-  LEFT JOIN {{ var('source_db') }}.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2;
+  LEFT JOIN {{ var('source_db') }}.identifiers sso ON sso.identifiable_type = 'User' AND sso.identifiable_id = u.id AND sso.identifier_scheme_id = 2
+GROUP BY u.id, u.firstname, u.surname, u.email, u.created_at, u.updated_at, u.accept_terms, u.active, u.last_sign_in_at, l.abbreviation, u.encrypted_password, u.org_id;
 
 JINJA_END;
