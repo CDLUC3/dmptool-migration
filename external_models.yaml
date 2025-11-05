@@ -1,4 +1,4 @@
-- name: '`dmp`.`annotations`'
+- name: '`source_db`.`annotations`'
   columns:
     id: INT
     question_id: INT
@@ -9,7 +9,7 @@
     updated_at: DATETIME
     versionable_id: VARCHAR(36)
   gateway: mysql
-- name: '`dmp`.`contributors`'
+- name: '`source_db`.`contributors`'
   columns:
     id: INT
     name: VARCHAR(255)
@@ -21,7 +21,7 @@
     created_at: DATETIME
     updated_at: DATETIME
   gateway: mysql
-- name: '`dmp`.`departments`'
+- name: '`source_db`.`departments`'
   columns:
     id: INT
     name: VARCHAR(255)
@@ -30,7 +30,7 @@
     created_at: DATETIME
     updated_at: DATETIME
   gateway: mysql
-- name: '`dmp`.`identifiers`'
+- name: '`source_db`.`identifiers`'
   columns:
     id: INT
     value: VARCHAR(255)
@@ -41,7 +41,7 @@
     created_at: DATETIME
     updated_at: DATETIME
   gateway: mysql
-- name: '`dmp`.`languages`'
+- name: '`source_db`.`languages`'
   columns:
     id: INT
     abbreviation: VARCHAR(255)
@@ -49,7 +49,7 @@
     name: VARCHAR(255)
     default_language: BOOLEAN
   gateway: mysql
-- name: '`dmp`.`orgs`'
+- name: '`source_db`.`orgs`'
   columns:
     id: INT
     name: VARCHAR(255)
@@ -74,7 +74,7 @@
     helpdesk_email: VARCHAR(255)
     v5_pilot: BOOLEAN
   gateway: mysql
-- name: '`dmp`.`phases`'
+- name: '`source_db`.`phases`'
   columns:
     id: INT
     title: VARCHAR(255)
@@ -86,7 +86,7 @@
     modifiable: BOOLEAN
     versionable_id: VARCHAR(36)
   gateway: mysql
-- name: '`dmp`.`plans`'
+- name: '`source_db`.`plans`'
   columns:
     id: INT
     title: VARCHAR(255)
@@ -127,7 +127,7 @@
     publisher_job_status: VARCHAR(255)
     accept_terms: BOOLEAN
   gateway: mysql
-- name: '`dmp`.`question_options`'
+- name: '`source_db`.`question_options`'
   columns:
     id: INT
     question_id: INT
@@ -138,7 +138,7 @@
     updated_at: DATETIME
     versionable_id: VARCHAR(36)
   gateway: mysql
-- name: '`dmp`.`questions`'
+- name: '`source_db`.`questions`'
   columns:
     id: INT
     text: TEXT
@@ -152,12 +152,12 @@
     modifiable: BOOLEAN
     versionable_id: VARCHAR(36)
   gateway: mysql
-- name: '`dmp`.`questions_themes`'
+- name: '`source_db`.`questions_themes`'
   columns:
     question_id: INT
     theme_id: INT
   gateway: mysql
-- name: '`dmp`.`registry_orgs`'
+- name: '`source_db`.`registry_orgs`'
   columns:
     id: BIGINT
     org_id: BIGINT
@@ -178,7 +178,7 @@
     api_auth_target: VARCHAR(255)
     api_query_fields: JSON
   gateway: mysql
-- name: '`dmp`.`related_identifiers`'
+- name: '`source_db`.`related_identifiers`'
   columns:
     id: BIGINT
     identifier_scheme_id: BIGINT
@@ -192,7 +192,7 @@
     work_type: INT
     citation: TEXT
   gateway: mysql
-- name: '`dmp`.`research_domains`'
+- name: '`source_db`.`research_domains`'
   columns:
     id: BIGINT
     identifier: VARCHAR(255)
@@ -201,7 +201,7 @@
     created_at: DATETIME
     updated_at: DATETIME
   gateway: mysql
-- name: '`dmp`.`roles`'
+- name: '`source_db`.`roles`'
   columns:
     id: INT
     user_id: INT
@@ -211,7 +211,7 @@
     access: INT
     active: BOOLEAN
   gateway: mysql
-- name: '`dmp`.`sections`'
+- name: '`source_db`.`sections`'
   columns:
     id: INT
     title: VARCHAR(255)
@@ -223,7 +223,7 @@
     modifiable: BOOLEAN
     versionable_id: VARCHAR(36)
   gateway: mysql
-- name: '`dmp`.`templates`'
+- name: '`source_db`.`templates`'
   columns:
     id: INT
     title: VARCHAR(255)
@@ -254,7 +254,7 @@
     customize_licenses: BOOLEAN
     publisher_job_status: VARCHAR(255)
   gateway: mysql
-- name: '`dmp`.`themes`'
+- name: '`source_db`.`themes`'
   columns:
     id: INT
     title: VARCHAR(255)
@@ -263,7 +263,7 @@
     updated_at: DATETIME
     locale: VARCHAR(255)
   gateway: mysql
-- name: '`dmp`.`users`'
+- name: '`source_db`.`users`'
   columns:
     id: INT
     firstname: VARCHAR(255)
@@ -303,7 +303,7 @@
     invitation_plan_id: INT
     ui_token: VARCHAR(255)
   gateway: mysql
-- name: '`dmp`.`users_perms`'
+- name: '`source_db`.`users_perms`'
   columns:
     user_id: INT
     perm_id: INT

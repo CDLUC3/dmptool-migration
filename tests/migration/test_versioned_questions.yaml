@@ -2,7 +2,7 @@ test_versionedQuestions:
   model: migration.versioned_questions
 
   inputs:
-    dmp.questions:
+    source_db.questions:
       rows:
         - id: 111
           question_format_id: 4 # Checkboxes
@@ -39,7 +39,7 @@ test_versionedQuestions:
           created_at: "2025-05-02T00:00:00Z"
           updated_at: "2025-05-03T00:00:00Z"
 
-    dmp.question_options:
+    source_db.question_options:
       rows:
         - question_id: 111
           number: 1
@@ -66,7 +66,7 @@ test_versionedQuestions:
           is_default: 0
           text: "Option C"
 
-    dmp.annotations:
+    source_db.annotations:
       rows:
         - question_id: 331
           type: 0

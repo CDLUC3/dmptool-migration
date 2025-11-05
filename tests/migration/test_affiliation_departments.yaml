@@ -8,20 +8,20 @@ test_affiliation_departments:
       - id: 1
         role: "SUPERADMIN"
 
-    dmp.orgs:
+    source_db.orgs:
       rows:
         - id: 100
           name: "Non ROR Institution"
         - id: 101
           name: "ROR Institution"
 
-    dmp.registry_orgs:
+    source_db.registry_orgs:
       rows:
         - id: 1000
           org_id: 101
           ror_id: "https://ror.org/abc123"
 
-    dmp.departments:
+    source_db.departments:
       rows:
         - id: 1
           name: "Department A"

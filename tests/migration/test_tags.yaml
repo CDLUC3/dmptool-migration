@@ -9,7 +9,7 @@ test_tags:
         role: "SUPERADMIN"
 
     # Themes
-    dmp.themes:
+    source_db.themes:
       rows:
         - title: 'Theme One'
           description: 'This is the first theme.'

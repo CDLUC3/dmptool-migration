@@ -6,7 +6,7 @@ test_templates:
       - id: 1
         role: "SUPERADMIN"
 
-    dmp.orgs:
+    source_db.orgs:
       rows:
         - id: 1
           name: "Example University"
@@ -14,13 +14,13 @@ test_templates:
         - id: 2
           name: "Another University"
 
-    dmp.registry_orgs:
+    source_db.registry_orgs:
       rows:
         - id: 1
           org_id: 2
           ror_id: "https://ror.org/xxxxxxxx"
 
-    dmp.users:
+    source_db.users:
       rows:
         - id: 1
           email: "admin@example.com"
@@ -42,7 +42,7 @@ test_templates:
           org_id: 2
           created_at: "2025-09-15 06:14:14"
 
-    dmp.users_perms:
+    source_db.users_perms:
       rows:
         - user_id: 1
           perm_id: 6
@@ -177,7 +177,7 @@ test_templates:
           is_current_template: 1
           new_created_by_id: 54321
 
-    dmp.templates:
+    source_db.templates:
       rows:
         - id: 1
           title: "Published Organizational Template"

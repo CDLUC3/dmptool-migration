@@ -2,7 +2,7 @@ test_sections:
   model: migration.sections
 
   inputs:
-    dmp.sections:
+    source_db.sections:
       rows:
         - id: 11
           title: "Section one"

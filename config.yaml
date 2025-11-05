@@ -32,4 +32,4 @@ variables:
   time_zone: '+00:00'
   start_ds: '2000-01-01'
   end_ds: '2026-12-31'
-  source_db: 'dmp'
+  source_db: 'source_db'

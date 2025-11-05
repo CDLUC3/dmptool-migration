@@ -9,7 +9,7 @@ test_affiliations:
         role: "SUPERADMIN"
 
     # ROR organisations
-    dmp.registry_orgs:
+    source_db.registry_orgs:
       rows:
         - id: 1
           org_id: 2
@@ -28,9 +28,9 @@ test_affiliations:
           api_target: "apiTarget"
 
     # DMP organisations
-    dmp.orgs:
+    source_db.orgs:
       rows:
-        # Does not map to any row in dmp.registry_orgs
+        # Does not map to any row in source_db.registry_orgs
         - id: 1
           name: "Institution"
           abbreviation: "I"
@@ -52,7 +52,7 @@ test_affiliations:
           api_create_plan_email_body: "Email body 1"
           v5_pilot: 0
 
-        # Maps to dmp.registry_orgs.id 2
+        # Maps to source_db.registry_orgs.id 2
         - id: 2
           name: "University of California, Berkeley (UCB) (berkeley.edu)"
           abbreviation: "UCB"
@@ -74,8 +74,8 @@ test_affiliations:
           api_create_plan_email_body: "Email body 2"
           v5_pilot: 1
 
-    # Maps to dmp.orgs based on identifiable_id
-    dmp.identifiers:
+    # Maps to source_db.orgs based on identifiable_id
+    source_db.identifiers:
       rows:
         - id: 1
           value: "ssoEntityId1"

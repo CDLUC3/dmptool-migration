@@ -6,7 +6,7 @@ test_versioned_templates:
       - id: 1
         role: "SUPERADMIN"
 
-    dmp.registry_orgs:
+    source_db.registry_orgs:
       rows:
         - id: 1
           org_id: 2
@@ -146,7 +146,7 @@ test_versioned_templates:
         - id: 3
           old_family_id: 98765
 
-    dmp.templates:
+    source_db.templates:
       rows:
         - id: 1
           title: "Published Organizational Template"
