@@ -1,14 +1,18 @@
-test_templates:
+test_versioned_templates:
   model: migration.versioned_templates
 
   inputs:
-    dmp.registry_orgs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
+    source_db.registry_orgs:
       rows:
         - id: 1
           org_id: 2
           ror_id: "https://ror.org/xxxxxxxx"
 
-    migration.templates_pt_br:
+    intermediate.templates_pt_br:
       columns:
         family_id: INT
       rows:
@@ -142,23 +146,7 @@ test_templates:
         - id: 3
           old_family_id: 98765
 
-    dmp.templates:
-      columns:
-        id: INT
-        title: VARCHAR
-        description: MEDIUMTEXT
-        customization_of: INT
-        published: BOOLEAN
-        org_id: INT
-        locale: VARCHAR
-        is_default: BOOLEAN
-        created_at: DATETIME
-        updated_at: DATETIME
-        version: INT
-        visibility: INT
-        family_id: INT
-        archived: BOOLEAN
-        links: JSON
+    source_db.templates:
       rows:
         - id: 1
           title: "Published Organizational Template"
@@ -322,7 +310,7 @@ test_templates:
           version: "v1"
           versionType: 'PUBLISHED'
           versionedById: 9876
-          visibility: "ORGANIZATIONAL"
+          visibility: "ORGANIZATION"
           comment: null
           name: "Published Organizational Template"
           description: "<p class=\"Normal\">Test published organizational template</p>"

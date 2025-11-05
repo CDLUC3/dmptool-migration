@@ -2,14 +2,7 @@ test_sections:
   model: migration.sections
 
   inputs:
-    dmp.sections:
-      columns:
-        id: INT
-        title: VARCHAR(255)
-        description: MEDIUMTEXT
-        number: INT
-        created_at: DATETIME
-        updated_at: DATETIME
+    source_db.sections:
       rows:
         - id: 11
           title: "Section one"

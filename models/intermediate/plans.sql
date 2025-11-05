@@ -1,6 +1,30 @@
 MODEL (
   name intermediate.plans,
   kind FULL,
+  columns (
+    id INT,
+    dmp_id VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    template_id INT,
+    title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    description text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    research_domain_id BIGINT,
+    start_date DATETIME,
+    end_date DATETIME,
+    featured BOOLEAN,
+    created_at DATETIME,
+    updated_at DATETIME,
+    grant_number VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    funding_status INT,
+    language VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    owner_email VARCHAR(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    opportunity_id VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    grant_id VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    visibility VARCHAR(14),
+    is_test_plan INT,
+    status VARCHAR(8),
+    org_id VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    funder_id VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci
+  ),
   enabled true
 );
 

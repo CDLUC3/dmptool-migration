@@ -4,6 +4,20 @@ test_plans:
     execution_time: "2025-10-01 00:00:00"
 
   inputs:
+    migration.projects:
+      columns:
+        id: INT
+        old_plan_id: INT
+        isTestProject: BOOLEAN
+        createdById: INT
+        modifiedById: INT
+
+      rows:
+        - id: 1
+          old_plan_id: 1
+        - id: 2
+          old_plan_id: 2
+
     intermediate.plans:
       rows:
         - id: 1
@@ -47,6 +61,7 @@ test_plans:
         registeredById: INT
       rows:
         - id: 1
+          old_plan_id: 1
           projectId: 1
           versionedTemplateId: 2
           title: "Plan 1"
@@ -63,6 +78,7 @@ test_plans:
           modified: "2024-01-02 00:00:00"
 
         - id: 2
+          old_plan_id: 2
           projectId: 2
           versionedTemplateId: 2
           title: "Plan 2"

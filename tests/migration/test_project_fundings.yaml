@@ -4,6 +4,19 @@ test_project_fundings:
     execution_time: "2025-10-01 00:00:00"
 
   inputs:
+    migration.projects:
+      columns:
+        id: INT
+        old_plan_id: INT
+        isTestProject: BOOLEAN
+        createdById: INT
+        modifiedById: INT
+      rows:
+        - id: 1
+          old_plan_id: 1
+        - id: 2
+          old_plan_id: 2
+
     intermediate.plans:
       rows:
         - id: 1
@@ -27,17 +40,20 @@ test_project_fundings:
       rows:
         - id: 1
           email: "owner1@example.com"
+          role: "SUPERADMIN"
 
         - id: 2
           email: "owner2@example.com"
+          role: NULL
 
   outputs:
     query:
       rows:
         - id: 1
+          old_plan_id: 1
           projectId: 1
           affiliationId: "https://dmptool.org/affiliations/0"
-          status: 1
+          status: "GRANTED"
           funderProjectNumber: NULL
           grantId: "12345678"
           funderOpportunityNumber: "NSF ABC123"
@@ -47,9 +63,10 @@ test_project_fundings:
           modified: "2024-01-02 00:00:00"
 
         - id: 2
+          old_plan_id: 2
           projectId: 2
           affiliationId: "https://ror.org/123abc"
-          status: 0
+          status: "PLANNED"
           funderProjectNumber: NULL
           grantId: "abcd1234"
           funderOpportunityNumber: "NSF ABC456"

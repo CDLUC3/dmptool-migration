@@ -13,26 +13,17 @@ MODEL (
   enabled true
 );
 
-WITH default_member_role AS (
-  SELECT id
-  FROM migration.member_roles
-  WHERE isDefault = 1
-  LIMIT 1
-)
-
-WITH default_super_admin AS (
-  SELECT id
-  FROM intermediate.users
-  WHERE role = 'SUPERADMIN'
-  ORDER BY id DESC LIMIT 1
-)
-
 SELECT
-    ROW_NUMBER() OVER (ORDER BY pm.id ASC) AS id,
-    pm.id AS planMemberId,
-    (SELECT id FROM default_member_role) AS memberRoleId,
-    pm.createdById,
-    pm.created,
-    pm.modifiedById,
-    pm.modified
-FROM migration.plan_members pm;
+  ROW_NUMBER() OVER () AS id,
+  pm.id AS planMemberId,
+  CASE
+    WHEN pm.memberRoleId IS NOT NULL THEN pm.memberRoleId
+    ELSE rm.new_id
+  END
+  AS memberRoleId,
+  pm.createdById,
+  pm.created,
+  pm.modifiedById,
+  pm.modified
+FROM intermediate.project_members pm
+LEFT JOIN seeds.role_mappings rm ON pm.oldRoleId = rm.old_id

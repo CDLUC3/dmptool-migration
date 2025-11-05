@@ -4,6 +4,26 @@ test_plan_fundings:
     execution_time: "2025-10-01 00:00:00"
 
   inputs:
+    migration.plans:
+      columns:
+        id: INT
+        projectId: INT
+        versionedTemplateId: INT
+        old_plan_id: INT
+        featured: BOOLEAN
+        isTestProject: BOOLEAN
+        createdById: INT
+        modifiedById: INT
+      rows:
+        - id: 1
+          old_plan_id: 1
+          createdById: 1
+          modifiedById: 1
+        - id: 2
+          old_plan_id: 2
+          createdById: 2
+          modifiedById: 2
+
     intermediate.plans:
       rows:
         - id: 1
@@ -19,14 +39,17 @@ test_plan_fundings:
       rows:
         - id: 1
           email: "owner1@example.com"
+          role: "SUPERADMIN"
 
         - id: 2
           email: "owner2@example.com"
+          role: NULL
 
   outputs:
     query:
       rows:
         - id: 1
+          old_plan_id: 1
           planId: 1
           projectFundingId: 1
           createdById: 1
@@ -35,6 +58,7 @@ test_plan_fundings:
           modified: "2024-01-02 00:00:00"
 
         - id: 2
+          old_plan_id: 2
           planId: 2
           projectFundingId: 2
           createdById: 2

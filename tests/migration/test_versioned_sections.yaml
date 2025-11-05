@@ -51,10 +51,7 @@ test_versioned_sections:
           old_display_order: 3
           displayOrder: 2
 
-    dmp.phases:
-      columns:
-        id: INT
-        template_id: INT
+    source_db.phases:
       rows:
         - id: 44
           template_id: 9999
@@ -62,15 +59,7 @@ test_versioned_sections:
         - id: 55
           template_id: 8888
 
-    dmp.sections:
-      columns:
-        id: INT
-        phase_id: INT
-        title: VARCHAR(255)
-        description: MEDIUMTEXT
-        number: INT
-        created_at: DATETIME
-        updated_at: DATETIME
+    source_db.sections:
       rows:
         - id: 11
           phase_id: 44

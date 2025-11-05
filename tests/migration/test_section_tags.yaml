@@ -1,4 +1,4 @@
-test_sectionTags:
+test_section_tags:
   model: migration.section_tags
 
   inputs:
