@@ -4,6 +4,8 @@ MODEL (
   enabled: true
 );
 
+JINJA_QUERY_BEGIN;
+
 SELECT
   works.id,
   works.identifiable_id AS plan_id,
@@ -30,5 +32,7 @@ SELECT
    END AS identifier_type,
   works.value,
   works.citation
-FROM dmp.related_identifiers AS works
-ORDER BY works.identifiable_id ASC;
+FROM {{ var('source_db') }}.related_identifiers AS works
+ORDER BY works.identifiable_id ASC
+
+JINJA_END;
