@@ -16,6 +16,8 @@ MODEL (
   enabled true
 );
 
+JINJA_QUERY_BEGIN;
+
 SELECT
   c.id,
   p.id AS plan_id,
@@ -31,9 +33,11 @@ SELECT
     WHEN ro.id IS NULL THEN CONCAT('https://dmptool.org/affiliations/', c.org_id)
     ELSE ro.ror_id
   END AS affiliation_id
-FROM dmp.contributors c
-  INNER JOIN dmp.plans p ON c.plan_id = p.id
-  LEFT JOIN dmp.orgs o ON c.org_id = o.id
-    LEFT JOIN dmp.registry_orgs ro ON o.id = ro.org_id
-  LEFT JOIN dmp.identifiers orcid ON c.id = orcid.identifiable_id
-      AND orcid.identifiable_type = 'Contributor' AND orcid.identifier_scheme_id = 1;
+FROM {{ var('source_db') }}.contributors c
+  INNER JOIN {{ var('source_db') }}.plans p ON c.plan_id = p.id
+  LEFT JOIN {{ var('source_db') }}.orgs o ON c.org_id = o.id
+    LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
+  LEFT JOIN {{ var('source_db') }}.identifiers orcid ON c.id = orcid.identifiable_id
+      AND orcid.identifiable_type = 'Contributor' AND orcid.identifier_scheme_id = 1
+
+JINJA_END;

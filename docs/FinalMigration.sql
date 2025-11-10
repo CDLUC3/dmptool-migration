@@ -277,7 +277,6 @@ SELECT DISTINCT pm.projectId, pm.affiliationId, pm.givenName, pm.surName, pm.ema
 FROM migration.project_members AS pm
          LEFT JOIN migration.affiliations AS a ON pm.affiliationId = a.uri;   -- 135,570 as of 2025-11-03
 
-
 -- Migrate the project member roles
 INSERT IGNORE INTO dmptool.projectMemberRoles (projectMemberId, memberRoleId, created, createdById, modified, modifiedById)
 SELECT projectMemberId, memberRoleId, created, createdById, modified, modifiedById
@@ -315,3 +314,33 @@ FROM migration.plan_member_roles;    -- 133,198 rows as of 2025-11-03
 INSERT IGNORE INTO dmptool.planFundings (planId, projectFundingId, created, createdById, modified, modifiedById)
 SELECT planId, projectFundingId, created, createdById, modified, modifiedById
 FROM migration.plan_fundings;    -- 79,101 rows as of 2025-11-03
+
+-- Migrate the works
+INSERT INTO dmptool.works (doi, created, createdById, modified, modifiedById)
+SELECT DISTINCT rw.value, MAX(p.created), MAX(p.createdById), MAX(p.modified), MAX(p.modifiedById)
+FROM migration.related_works rw
+         INNER JOIN migration.plans p ON rw.plan_id = p.old_plan_id
+WHERE rw.identifier_type = 'DOI' AND rw.is_valid = 1
+GROUP BY rw.value;   -- 321 rows as of 2025-11-05
+
+-- TODO: Finish the workVersions and relatedWork migrations
+
+-- Migrate the work versions
+
+INSERT IGNORE INTO dmptool.workVersions (workId, hash, workType, authors, institutions, funders,
+                                         awards, sourceName, sourceUrl,
+                                         created, createdById, modified, modifiedById)
+SELECT w.id AS workId, '{}', 'DATASET', '[]', '[]', '[]', '[]', 'DMPTOOL', 'https://dmptool.org',
+  created, createdById, modified, modifiedById
+FROM migration.related_works AS rw
+  INNER JOIN dmptool.works AS w ON rw.value = w.doi;
+WHERE migration.related_works.identifier_type = 'DOI' AND migration.related_works.is_valid = 1;   -- 112,345 rows as of 2025-11-03
+
+-- Migrate the related works
+INSERT IGNORE INTO dmptool.relatedWorks (planId, workVersionId, score, scoreMax, status, sourceType,
+                                         created, createdById, modified, modifiedById)
+SELECT p.id, wv.id, 1, 1, 'ACCEPTED', 'USER_ADDED', p.created, p.createdById, p.modified, p.modifiedById
+FROM migration.related_works AS rw
+  INNER JOIN dmptool.works AS w ON rw.value = w.doi
+    INNER JOIN dmptool.workVersions AS wv ON w.id = wv.workId
+  INNER JOIN migration.plans As p ON rw.plan_id = p.old_plan_id; -- 328 rows as of 2025-11-05
