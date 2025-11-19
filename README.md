@@ -3,13 +3,15 @@ SQLMesh code to facilitate data migration from the old Rails DMP Tool to the new
 
 Requirements:
 - python3
+- pip
 - mysql client
 - duckdb
 
 ## Setup
 Create a python virtual environment:
 ```
-python3 -m venv venv
+> python3 -m venv venv
+> source venv/bin/activate
 ```
 
 Install dependencies:
@@ -42,6 +44,19 @@ mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE source_db CHARACT
 
 # Import the source database dump into the new server
 mysql -u [username] -p -P [port] -h [host] source_db < ~/source_db.sql
+
+# Add some indices to speed up the migration process
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_orgs_lower_name ON source_db.orgs ( (LOWER(TRIM(name))) );"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_registry_orgs_lower_name ON source_db.registry_orgs ( (LOWER(TRIM(displayName))) );"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_answ_qs ON source_db.answers (id, question_id);"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_answ_qopts ON source_db.answers_question_options (answer_id, question_option_id);"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_contrib_emails ON source_db.contributors (email);"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_ids ON source_db.identifiers (identifiable_id, identifiable_type, identifier_scheme_id);"
+
+mysql -u [username] -p -P [port] -h [host] -e "CREATE FULLTEXT INDEX idx_fulltext_contribs ON source_db.contributors (name, email);"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE FULLTEXT INDEX idx_fulltext_users ON source_db.users (firstname, surname, email);"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE FULLTEXT INDEX idx_fulltext_orgs ON source_db.orgs (name);"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE FULLTEXT INDEX idx_fulltext_ror_orgs ON source_db.registry_orgs (name);"
 ```
 This does not work for mysql v9, so be sure to install v8!
 Note that you may need to use `127.0.0.1` instead of `localhost` for the host to avoid socket connection issues.
@@ -52,7 +67,7 @@ To create the `ror_staging` table you must add the ROR JSON data file to the `./
 
 First make sure the `migration.ror_staging` table exists:
 ```sql
-CREATE TABLE IF NOT EXISTS `migration.ror_staging` (
+CREATE TABLE IF NOT EXISTS `migration`.`ror_staging` (
   `uri` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `provenance` varchar(16) NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,

@@ -55,6 +55,7 @@ TRUNCATE dmptool.repositoryResearchDomains;
 TRUNCATE dmptool.licenses;
 TRUNCATE dmptool.metadataStandards;
 TRUNCATE dmptool.repositories;
+TRUNCATE dmptool.researchOutputTypes;
 
 TRUNCATE dmptool.memberRoles;
 TRUNCATE dmptool.researchDomains;
@@ -96,9 +97,18 @@ INSERT INTO dmptool.users (givenName, surName, affiliationId, password,
                            role, acceptedTerms, locked, active, languageId, notify_on_comment_added,
                            notify_on_template_shared, notify_on_feedback_complete, notify_on_plan_shared,
                            notify_on_plan_visibility_change, created, modified)
-VALUES ('NIH', 'Admin', 'https://ror.org/01cwqze88',
+VALUES ('Test', 'Admin', 'https://ror.org/03yrm5c26',
         '$2a$10$f3wCBdUVt/2aMcPOb.GX1OBO9WMGxDXx5HKeSBBnrMhat4.pis4Pe',
         'ADMIN', 1, 0, 1, 'en-US', 1, 1, 1, 1, 1, CURRENT_DATE(), CURRENT_DATE());
+
+INSERT dmptool.users (givenName, surName, affiliationId, password,
+                           role, acceptedTerms, locked, active, languageId, notify_on_comment_added,
+                           notify_on_template_shared, notify_on_feedback_complete, notify_on_plan_shared,
+                           notify_on_plan_visibility_change, created, modified)
+VALUES ('Test', 'Researcher', 'https://ror.org/03yrm5c26',
+        '$2a$10$f3wCBdUVt/2aMcPOb.GX1OBO9WMGxDXx5HKeSBBnrMhat4.pis4Pe',
+        'RESEARCHER', 1, 0, 1, 'en-US', 1, 1, 1, 1, 1, CURRENT_DATE(), CURRENT_DATE());
+
 
 SELECT COUNT(*) FROM dmptool.users; -- 141,268 as of 2025-11-03
 
@@ -118,9 +128,13 @@ INSERT INTO dmptool.userEmails (userId, email, isPrimary, isConfirmed, created, 
 
 INSERT INTO dmptool.userEmails (userId, email, isPrimary, isConfirmed, created, createdById,
                                 modified, modifiedById)
-    (SELECT id, 'admin@nih.gov', 1, 1, CURRENT_DATE(), id, CURRENT_DATE, id
-     FROM dmptool.users WHERE givenName = 'NIH' AND surName = 'Admin');
+    (SELECT id, 'admin@example.gov', 1, 1, CURRENT_DATE(), id, CURRENT_DATE, id
+     FROM dmptool.users WHERE givenName = 'Test' AND surName = 'Admin');
 
+INSERT INTO dmptool.userEmails (userId, email, isPrimary, isConfirmed, created, createdById,
+                                modified, modifiedById)
+    (SELECT id, 'researcher@example.com', 1, 1, CURRENT_DATE(), id, CURRENT_DATE, id
+     FROM dmptool.users WHERE givenName = 'Test' AND surName = 'Researcher');
 
 SELECT COUNT(*) FROM dmptool.userEmails; -- 141,268 as of 2025-11-03
 
@@ -180,6 +194,28 @@ INSERT INTO dmptool.memberRoles (id, label, uri, description, displayOrder, isDe
 SELECT id, label, uri, description, displayOrder, isDefault,
        createdById, created, modifiedById, modified
 FROM migration.member_roles;   -- 15 rows as of 2025-11-03
+
+-- Migrate the research output types
+INSERT INTO dmptool.researchOutputTypes (name, value, description, createdById, created, modifiedById, modified)
+SELECT name, value, description, createdById, created, modifiedById, modified
+FROM migration.research_putput_types; -- 15 rows as of 2025-11-19
+
+-- Migrate the repositories
+INSERT IGNORE INTO dmptool.repositories (name, description, uri, website, keywords, repositoryTypes,
+								  createdById, created, modifiedById, modified)
+SELECT DISTINCT name, uri, description, website, keywords, repositoryTypes, createdById, created, modifiedById, modified
+FROM migration.repositories;   -- 4,117 rows as of 2025-11-19
+
+-- Migrate the metadata standards
+INSERT IGNORE INTO dmptool.metadataStandards (name, description, uri, createdById, created, modifiedById, modified)
+SELECT DISTINCT name, uri, description, createdById, created, modifiedById, modified
+FROM migration.metadata_standards;   -- 281 rows as of 2025-11-19
+
+-- Migrate the licenses
+INSERT INTO dmptool.licenses (name, description, uri, createdById, created, modifiedById, modified)
+SELECT DISTINCT name, uri, description, createdById, created, modifiedById, modified
+FROM migration.licenses;   -- 680 rows as of 2025-11-19
+
 
 -- TODO: Unable to migrate templates for ROR https://ror.org/03e62d071 because of displayName issue mentioned above
 
@@ -270,17 +306,16 @@ FROM migration.project_collaborators;   -- 147,401 rows as of 2025-11-03
 -- TODO: Deal with issue of duplicate users in intermediate.users (e.g. ids 48928, 48929)
 
 -- Migrate the project members
-INSERT IGNORE INTO dmptool.projectMembers (projectId, affiliationId, givenName, surName, email, orcid, isPrimaryContact,
-                                    created, createdById, modified, modifiedById)
-SELECT DISTINCT pm.projectId, pm.affiliationId, pm.givenName, pm.surName, pm.email, pm.orcid,
-                pm.isPrimaryContact, pm.created, pm.createdById, pm.modified, pm.modifiedById
-FROM migration.project_members AS pm
-         LEFT JOIN migration.affiliations AS a ON pm.affiliationId = a.uri;   -- 135,570 as of 2025-11-03
+INSERT IGNORE INTO dmptool.projectMembers (id, projectId, affiliationId, givenName, surName, email, orcid,
+										   isPrimaryContact, created, createdById, modified, modifiedById)
+SELECT DISTINCT id, projectId, affiliationId, givenName, surName, email, orcid,
+                isPrimaryContact, created, createdById, modified, modifiedById
+FROM migration.project_members AS pm;   -- 79,389 as of 2025-11-17
 
 -- Migrate the project member roles
 INSERT IGNORE INTO dmptool.projectMemberRoles (projectMemberId, memberRoleId, created, createdById, modified, modifiedById)
-SELECT projectMemberId, memberRoleId, created, createdById, modified, modifiedById
-FROM migration.project_member_roles;   -- 120,053 rows as of 2025-11-03
+SELECT DISTINCT projectMemberId, memberRoleId, created, createdById, modified, modifiedById
+FROM migration.project_member_roles;   -- 203,201 rows as of 2025-11-06
 
 -- Migrate the project funding
 INSERT IGNORE INTO dmptool.projectFundings (projectId, affiliationId, status, funderProjectNumber, grantId,
@@ -298,11 +333,17 @@ SELECT projectId, versionedTemplateId, title, visibility, status, dmpId, registe
        languageId, featured, created, createdById, modified, modifiedById
 FROM migration.plans;    -- 133,018 rows as of 2025-11-03
 
+-- Migrate the answers
+INSERT IGNORE INTO dmptool.answers (planId, versionedSectionId, versionedQuestionId, json, createdById, created, modifiedById, modified)
+SELECT planId, versionedSectionId, versionedQuestionId, json,
+       createdById, created, modifiedById, modified)
+FROM migration.answers
+WHERE planId IS NOT NULL; -- 567,112 rows as of 2025-11-13
 
 -- Migrate the plan members
-INSERT IGNORE INTO dmptool.planMembers (planId, projectMemberId, isPrimaryContact, created, createdById, modified,
+INSERT IGNORE INTO dmptool.planMembers (id, planId, projectMemberId, isPrimaryContact, created, createdById, modified,
 								 modifiedById)
-SELECT planId, projectMemberId, isPrimaryContact, created, createdById, modified, modifiedById
+SELECT id, planId, projectMemberId, isPrimaryContact, created, createdById, modified, modifiedById
 FROM migration.plan_members;    -- 133,198 rows as of 2025-11-03
 
 -- Migrate the plan member roles

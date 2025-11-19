@@ -6,9 +6,9 @@ MODEL (
     projectMemberId INT UNSIGNED NOT NULL,
     memberRoleId INT UNSIGNED NOT NULL,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created DATETIME NOT NULL DEFAULT CURRENT_DATE,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_DATE,
   ),
   enabled true
 );
@@ -16,14 +16,10 @@ MODEL (
 SELECT
   ROW_NUMBER() OVER () AS id,
   pm.id AS projectMemberId,
-  CASE
-    WHEN pm.memberRoleId IS NOT NULL THEN pm.memberRoleId
-    ELSE rm.new_id
-  END
-  AS memberRoleId,
+  COALESCE(rm.new_id, 15) AS memberRoleId,
   pm.createdById,
   pm.created,
   pm.modifiedById,
   pm.modified
-FROM intermediate.project_members pm
-LEFT JOIN seeds.role_mappings rm ON pm.oldRoleId = rm.old_id
+FROM migration.project_members pm
+  LEFT JOIN seeds.role_mappings rm ON pm.roles = rm.old_id;

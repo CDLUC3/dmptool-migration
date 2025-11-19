@@ -7,9 +7,9 @@ MODEL (
     name VARCHAR(255),
     code VARCHAR(255),
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL
+    modified DATETIME NOT NULL
   ),
   audits (
     unique_values(columns := (id), blocking := false)

@@ -31,9 +31,9 @@ MODEL (
     isDirty BOOLEAN NOT NULL DEFAULT 1,
     bestPractice BOOLEAN NOT NULL DEFAULT 0,
     languageId CHAR(5) NOT NULL DEFAULT 'en-US',
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT
   ),
   audits (
