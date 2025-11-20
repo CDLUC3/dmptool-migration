@@ -41,13 +41,14 @@ mysqldump -h [host] -P [port] -u [username] -p [database] \
 
 # Create the target database on the new server
 mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE source_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE DATABASE migration CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
 
 # Import the source database dump into the new server
 mysql -u [username] -p -P [port] -h [host] source_db < ~/source_db.sql
 
 # Add some indices to speed up the migration process
 mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_orgs_lower_name ON source_db.orgs ( (LOWER(TRIM(name))) );"
-mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_registry_orgs_lower_name ON source_db.registry_orgs ( (LOWER(TRIM(displayName))) );"
+mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_registry_orgs_lower_name ON source_db.registry_orgs ( (LOWER(TRIM(name))) );"
 mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_answ_qs ON source_db.answers (id, question_id);"
 mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_answ_qopts ON source_db.answers_question_options (answer_id, question_option_id);"
 mysql -u [username] -p -P [port] -h [host] -e "CREATE INDEX idx_contrib_emails ON source_db.contributors (email);"
