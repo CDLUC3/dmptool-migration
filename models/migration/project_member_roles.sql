@@ -1,11 +1,10 @@
 MODEL (
-  name migration.plan_members,
+  name migration.project_member_roles,
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
-    planId INT UNSIGNED NOT NULL,
     projectMemberId INT UNSIGNED NOT NULL,
-    isPrimaryContact TINYINT(1) NOT NULL,
+    memberRoleId INT UNSIGNED NOT NULL,
     createdById INT UNSIGNED NOT NULL,
     created DATETIME NOT NULL DEFAULT CURRENT_DATE,
     modifiedById INT UNSIGNED NOT NULL,
@@ -15,14 +14,12 @@ MODEL (
 );
 
 SELECT
-  ROW_NUMBER() OVER (ORDER BY pm.id ASC) AS id,
-  p.id AS planId,
+  ROW_NUMBER() OVER () AS id,
   pm.id AS projectMemberId,
-  pm.isPrimaryContact,
+  COALESCE(rm.new_id, 15) AS memberRoleId,
   pm.createdById,
   pm.created,
   pm.modifiedById,
   pm.modified
-FROM migration.project_members pm
-  JOIN migration.plans p ON pm.projectId = p.id;
-
+FROM migration.final_project_members pm
+  LEFT JOIN seeds.role_mappings rm ON pm.roles = rm.old_id;

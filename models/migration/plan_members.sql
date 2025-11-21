@@ -1,0 +1,28 @@
+MODEL (
+  name migration.plan_members,
+  kind FULL,
+  columns (
+    id INT UNSIGNED NOT NULL,
+    planId INT UNSIGNED NOT NULL,
+    projectMemberId INT UNSIGNED NOT NULL,
+    isPrimaryContact TINYINT(1) NOT NULL,
+    createdById INT UNSIGNED NOT NULL,
+    created DATETIME NOT NULL DEFAULT CURRENT_DATE,
+    modifiedById INT UNSIGNED NOT NULL,
+    modified DATETIME NOT NULL DEFAULT CURRENT_DATE,
+  ),
+  enabled true
+);
+
+SELECT
+  ROW_NUMBER() OVER (ORDER BY pm.id ASC) AS id,
+  p.id AS planId,
+  pm.id AS projectMemberId,
+  pm.isPrimaryContact,
+  pm.createdById,
+  pm.created,
+  pm.modifiedById,
+  pm.modified
+FROM migration.final_project_members pm
+  JOIN migration.plans p ON pm.projectId = p.projectId;
+

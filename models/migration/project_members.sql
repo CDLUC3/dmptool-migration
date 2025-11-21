@@ -28,14 +28,13 @@ WITH members AS (
     c.last_name AS surName,
     c.orcid,
     c.email,
-    pm.isPrimaryContact,
+    0 AS isPrimaryContact,
     c.roles,
     p.createdById,
-    c.created     AS created,
+    p.created     AS created,
     p.createdById AS modifiedById,
-    c.modified    AS modified
-  FROM intermediate.plan_members AS pm
-    JOIN intermediate.contributors AS c ON pm.contributorId = c.id
+    p.modified    AS modified
+  FROM intermediate.contributors AS c
     JOIN migration.projects p ON p.old_plan_id = c.plan_id
 
   UNION ALL
