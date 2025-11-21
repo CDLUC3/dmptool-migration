@@ -7,9 +7,9 @@ MODEL (
     email VARCHAR(255) NOT NULL,
     isPrimary TINYINT(1) NOT NULL DEFAULT 0,
     isConfirmed TINYINT(1) NOT NULL DEFAULT 0,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT UNSIGNED,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT UNSIGNED
   ),
   audits (

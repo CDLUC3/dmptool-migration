@@ -11,9 +11,9 @@ MODEL (
     grantId VARCHAR(255) DEFAULT NULL,
     funderOpportunityNumber VARCHAR(255) DEFAULT NULL,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created DATETIME NOT NULL DEFAULT CURRENT_DATE,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_DATE,
   ),
   enabled true
 );
@@ -36,8 +36,8 @@ SELECT
     ELSE 'PLANNED'
   END AS status,
   NULL AS funderProjectNumber,
-  p.grant_id AS grantId,
-  p.grant_number AS funderOpportunityNumber,
+  TRIM(p.grant_id) AS grantId,
+  TRIM(p.grant_number) AS funderOpportunityNumber,
   COALESCE(u.id, (SELECT id FROM default_super_admin)) AS createdById,
   p.created_at AS created,
   COALESCE(u.id, (SELECT id FROM default_super_admin)) AS modifiedById,

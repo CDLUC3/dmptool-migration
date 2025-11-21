@@ -1,0 +1,22 @@
+MODEL (
+  name intermediate.plan_members,
+  kind FULL,
+  columns (
+    contributorId INT UNSIGNED NOT NULL,
+    isPrimaryContact BOOLEAN NOT NULL DEFAULT FALSE
+  ),
+  enabled true
+);
+
+-- Gather all the contributors who are not plan owners
+SELECT
+    c.id AS contributorId,
+    (
+      po_email.email IS NOT NULL
+      OR po_orcid.orcid IS NOT NULL
+      OR po_name.givenName IS NOT NULL
+    ) AS isPrimaryContact
+FROM intermediate.contributors AS c
+  LEFT JOIN intermediate.plan_owners po_email ON po_email.email = c.email
+  LEFT JOIN intermediate.plan_owners po_orcid ON po_orcid.orcid = c.orcid
+  LEFT JOIN intermediate.plan_owners po_name ON po_name.givenName = c.first_name AND po_name.surName = c.last_name;

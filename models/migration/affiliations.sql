@@ -55,9 +55,9 @@ MODEL (
     active BOOLEAN NOT NULL DEFAULT 1,
     apiTarget VARCHAR(255) COLLATE utf8mb4_0900_ai_ci ,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL
+    modified DATETIME NOT NULL
   ),
   audits (
     unique_values(columns := (id, uri, displayName), blocking := false)
@@ -68,14 +68,14 @@ MODEL (
 JINJA_QUERY_BEGIN;
 
 WITH default_super_admin AS (
-  SELECT id
-  FROM intermediate.users
-  WHERE role = 'SUPERADMIN'
-  ORDER BY id DESC LIMIT 1
-),
+    SELECT id
+    FROM intermediate.users
+    WHERE role = 'SUPERADMIN'
+    ORDER BY id DESC LIMIT 1
+    ),
 
-ror_orgs AS (
-  SELECT
+    ror_orgs AS (
+SELECT
     ro.org_id,
     ro.ror_id,
     i.value AS ssoEntityId,
@@ -88,25 +88,25 @@ ror_orgs AS (
     o.feedback_enabled,
     o.feedback_msg,
     o.links
-  FROM {{ var('source_db') }}.registry_orgs ro
-  INNER JOIN {{ var('source_db') }}.orgs o ON ro.org_id = o.id
-  LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
-  WHERE ro.org_id IS NOT NULL -- Selects only ROR records we are using
-),
+FROM {{ var('source_db') }}.registry_orgs ro
+    INNER JOIN {{ var('source_db') }}.orgs o ON ro.org_id = o.id
+    LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
+WHERE ro.org_id IS NOT NULL -- Selects only ROR records we are using
+    ),
 
-non_ror_orgs AS (
-  SELECT
+    non_ror_orgs AS (
+SELECT
     o.*,
     i.value AS ssoEntityId
-  FROM {{ var('source_db') }}.orgs o
-  LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
-  LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
-  WHERE ro.id IS NULL -- Where no ROR org was mapped to orgs table
-),
+FROM {{ var('source_db') }}.orgs o
+    LEFT JOIN {{ var('source_db') }}.registry_orgs ro ON o.id = ro.org_id
+    LEFT JOIN {{ var('source_db') }}.identifiers i ON i.identifiable_type = 'Org' AND i.identifiable_id = o.id AND i.identifier_scheme_id = 2
+WHERE ro.id IS NULL -- Where no ROR org was mapped to orgs table
+    ),
 
 ---- ROR based affiliations
-ror_affiliations AS (
-  SELECT
+    ror_affiliations AS (
+SELECT
     rs.uri AS uri,
     rs.provenance AS provenance,
     rs.name AS name,
@@ -130,16 +130,16 @@ ror_affiliations AS (
     TRUE AS active,
     ro.api_target AS apiTarget,
     (SELECT id FROM default_super_admin) AS createdById,
-    CURRENT_TIMESTAMP AS created,
+    CURRENT_DATE AS created,
     (SELECT id FROM default_super_admin) AS modifiedById,
-    CURRENT_TIMESTAMP AS modified
-  FROM migration.ror_staging rs
+    CURRENT_DATE AS modified
+FROM migration.ror_staging rs
     LEFT JOIN ror_orgs ro ON rs.uri = ro.ror_id
-),
+    ),
 
 -- Non ROR based affiliations
-non_ror_affiliations AS (
-  SELECT
+    non_ror_affiliations AS (
+SELECT
     CONCAT('https://dmptool.org/affiliations/', nro.id) AS uri,
     'DMPTOOL' AS provenance,
     TRIM(nro.name) AS name,
@@ -151,13 +151,13 @@ non_ror_affiliations AS (
     IF(nro.abbreviation IS NOT NULL, JSON_ARRAY(TRIM(nro.abbreviation)), JSON_ARRAY()) AS acronyms,
     JSON_ARRAY() AS aliases,
     CASE
-      WHEN nro.org_type = 2 THEN '["GOVERNMENT"]'
-      WHEN nro.org_type = 3 THEN '["EDUCATION", "GOVERNMENT"]'
-      WHEN (nro.org_type = 4 AND LOWER(nro.name) LIKE '%college%' OR LOWER(nro.name) LIKE '%university%' OR LOWER(nro.name) LIKE '%school%') THEN '["EDUCATION"]'
-      WHEN (nro.org_type = 4 AND LOWER(nro.name) NOT LIKE '%college%' AND LOWER(nro.name) NOT LIKE '%university%' AND LOWER(nro.name) NOT LIKE '%school%') THEN '["OTHER"]'
-      WHEN nro.org_type IN (5, 6) THEN '["NONPROFIT"]'
-      WHEN nro.org_type = 7 THEN '["EDUCATION", "GOVERNMENT", "OTHER"]'
-      ELSE '["EDUCATION"]'
+    WHEN nro.org_type = 2 THEN '["GOVERNMENT"]'
+    WHEN nro.org_type = 3 THEN '["EDUCATION", "GOVERNMENT"]'
+    WHEN (nro.org_type = 4 AND LOWER(nro.name) LIKE '%college%' OR LOWER(nro.name) LIKE '%university%' OR LOWER(nro.name) LIKE '%school%') THEN '["EDUCATION"]'
+    WHEN (nro.org_type = 4 AND LOWER(nro.name) NOT LIKE '%college%' AND LOWER(nro.name) NOT LIKE '%university%' AND LOWER(nro.name) NOT LIKE '%school%') THEN '["OTHER"]'
+    WHEN nro.org_type IN (5, 6) THEN '["NONPROFIT"]'
+    WHEN nro.org_type = 7 THEN '["EDUCATION", "GOVERNMENT", "OTHER"]'
+    ELSE '["EDUCATION"]'
     END AS types,
     TRIM(nro.logo_uid) AS logoURI,
     TRIM(nro.logo_name) AS logoName,
@@ -174,24 +174,30 @@ non_ror_affiliations AS (
     CAST(nro.created_at AS TIMESTAMP) AS created,
     (SELECT id FROM default_super_admin) AS modifiedById,
     CAST(nro.updated_at AS TIMESTAMP) AS modified
-  FROM non_ror_orgs nro
-)
+FROM non_ror_orgs nro
+    )
 
 -- Build final table
 SELECT
-  ROW_NUMBER() OVER (ORDER BY a.modified ASC) AS id,
-  a.*
+    ROW_NUMBER() OVER (ORDER BY a.modified ASC) AS id,
+    a.*
 FROM (
-  SELECT * FROM ror_affiliations
+         -- 1. Include ALL ROR affiliations first
+         SELECT * FROM ror_affiliations
 
-  UNION ALL
+         UNION ALL
 
-  SELECT * FROM non_ror_affiliations
-  WHERE NOT EXISTS (
-    SELECT 1
-    FROM ror_affiliations ra
-    WHERE LOWER(ra.displayName) = LOWER(TRIM(non_ror_affiliations.name))
-  )
-) AS a;
+         -- 2. Include Non-ROR affiliations that DO NOT match an ROR affiliation display name
+         SELECT
+             nra.*
+         FROM non_ror_affiliations nra
+                  -- Rewriting the anti-join from NOT EXISTS to LEFT JOIN + WHERE NULL
+                  LEFT JOIN ror_affiliations ra
+             -- Use the transformed columns for the join condition
+                            ON LOWER(ra.displayName) = LOWER(nra.name)
+         WHERE
+             -- This condition filters out any non-ror org that found a match in the ror_affiliations list
+             ra.uri IS NULL
+     ) AS a;
 
 JINJA_END;

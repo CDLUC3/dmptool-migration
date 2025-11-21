@@ -15,9 +15,9 @@ MODEL (
     slug VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT
   ),
   audits (

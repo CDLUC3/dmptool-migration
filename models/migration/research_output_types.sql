@@ -1,24 +1,20 @@
 MODEL (
-  name migration.member_roles,
+  name migration.research_output_types,
   kind FULL,
   columns (
-    id INT UNSIGNED NOT NULL,
-    label VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
-    uri VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    name VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    value VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
     description VARCHAR(255) COLLATE utf8mb4_0900_ai_ci NOT NULL,
-    displayOrder INT NOT NULL,
-    isDefault TINYINT(1) NOT NULL DEFAULT 0,
     createdById INT UNSIGNED NOT NULL,
     created DATETIME NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
     modified DATETIME NOT NULL
   ),
   audits (
-    unique_values(columns := (uri, label), blocking := false)
+    unique_values(columns := (name, value), blocking := false)
   ),
   enabled true
 );
-
 
 WITH default_super_admin AS (
   SELECT id
@@ -28,14 +24,11 @@ WITH default_super_admin AS (
 )
 
 SELECT
-  ROW_NUMBER() OVER () AS id,
-  TRIM(mr.label) AS label,
-  TRIM(mr.uri) AS uri,
-  TRIM(mr.description) AS description,
-  mr.display_order AS displayOrder,
-  mr.is_default AS isDefault,
+  TRIM(rot.name) AS name,
+  TRIM(rot.value) AS value,
+  TRIM(rot.description) AS description,
   (SELECT id FROM default_super_admin) AS createdById,
   CURRENT_DATE() AS created,
   (SELECT id FROM default_super_admin) AS modifiedById,
   CURRENT_DATE() AS modified
-FROM intermediate.member_roles AS mr;
+FROM intermediate.research_output_types AS rot;

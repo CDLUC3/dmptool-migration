@@ -15,7 +15,7 @@ MODEL (
     locked TINYINT(1) NOT NULL DEFAULT 0,
     active TINYINT(1) NOT NULL DEFAULT 1,
     languageId CHAR(5) NOT NULL DEFAULT 'en-US',
-    last_sign_in TIMESTAMP,
+    last_sign_in DATETIME,
     last_sign_in_via VARCHAR(10),
     failed_sign_in_attempts INT NOT NULL DEFAULT 0,
     notify_on_comment_added TINYINT(1) NOT NULL DEFAULT 1,
@@ -23,9 +23,9 @@ MODEL (
     notify_on_feedback_complete TINYINT(1) NOT NULL DEFAULT 1,
     notify_on_plan_shared TINYINT(1) NOT NULL DEFAULT 1,
     notify_on_plan_visibility_change TINYINT(1) NOT NULL DEFAULT 1,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT UNSIGNED,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT UNSIGNED
   ),
   -- audits (

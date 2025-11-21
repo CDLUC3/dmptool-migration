@@ -14,9 +14,9 @@ MODEL (
     id INT UNSIGNED PRIMARY KEY,
     versionedSectionId INT NOT NULL,
     tagId INT NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT UNSIGNED NOT NULL
   ),
   audits (

@@ -31,9 +31,9 @@ MODEL (
     sampleText MEDIUMTEXT NOT NULL,
     old_display_order INT NOT NULL,
     displayOrder INT NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT
   ),
   audits (
