@@ -27,9 +27,9 @@ MODEL (
     displayOrder INT NOT NULL,
     bestPractice BOOLEAN NOT NULL DEFAULT 0,
     isDirty BOOLEAN NOT NULL DEFAULT 1,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT
   ),
   audits (

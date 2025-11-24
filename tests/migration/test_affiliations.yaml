@@ -4,8 +4,12 @@ test_affiliations:
     execution_time: "2025-10-01 00:00:00"
 
   inputs:
+    intermediate.users:
+      - id: 1
+        role: "SUPERADMIN"
+
     # ROR organisations
-    dmp.registry_orgs:
+    source_db.registry_orgs:
       rows:
         - id: 1
           org_id: 2
@@ -24,9 +28,9 @@ test_affiliations:
           api_target: "apiTarget"
 
     # DMP organisations
-    dmp.orgs:
+    source_db.orgs:
       rows:
-        # Does not map to any row in dmp.registry_orgs
+        # Does not map to any row in source_db.registry_orgs
         - id: 1
           name: "Institution"
           abbreviation: "I"
@@ -48,7 +52,7 @@ test_affiliations:
           api_create_plan_email_body: "Email body 1"
           v5_pilot: 0
 
-        # Maps to dmp.registry_orgs.id 2
+        # Maps to source_db.registry_orgs.id 2
         - id: 2
           name: "University of California, Berkeley (UCB) (berkeley.edu)"
           abbreviation: "UCB"
@@ -70,8 +74,8 @@ test_affiliations:
           api_create_plan_email_body: "Email body 2"
           v5_pilot: 1
 
-    # Maps to dmp.orgs based on identifiable_id
-    dmp.identifiers:
+    # Maps to source_db.orgs based on identifiable_id
+    source_db.identifiers:
       rows:
         - id: 1
           value: "ssoEntityId1"
@@ -105,37 +109,8 @@ test_affiliations:
   outputs:
     query:
       rows:
-        # ROR based affiliation
-        - id: 1
-          uri: "https://ror.org/01an7q238"
-          provenance: "ROR"
-          name: "University of California, Berkeley"
-          displayName: "University of California, Berkeley (berkeley.edu)"
-          searchName: "University of California, Berkeley | berkeley.edu | Cal Berkeley | UC Berkeley | University of California at Berkeley"
-          funder: 1
-          fundrefId: "100006978"
-          homepage: "https://www.berkeley.edu"
-          acronyms: '["UCB"]'
-          aliases: '["Cal Berkeley", "UC Berkeley", "University of California at Berkeley"]'
-          types: '["EDUCATION", "FUNDER"]'
-          logoURI: "path/to/logo2.png"
-          logoName: "logo2.png"
-          contactName: "Contact name 2"
-          contactEmail: "library2@example.com"
-          ssoEntityId: "ssoEntityId2"
-          feedbackEnabled: 1
-          feedbackMessage: "Feedback message 2"
-          feedbackEmails: '[]'
-          managed: 1
-          active: 1
-          apiTarget: "apiTarget"
-          createdById: 1
-          created: "2025-10-01 00:00:00"
-          modifiedById: 1
-          modified: "2025-10-01 00:00:00"
-
         # Non ROR based affiliations
-        - id: 2
+        - id: 1
           uri: "https://dmptool.org/affiliations/1"
           provenance: "DMPTOOL"
           name: "Institution"
@@ -162,3 +137,32 @@ test_affiliations:
           created: "2022-01-01 12:35:00"
           modifiedById: 1
           modified: "2023-01-01 00:00:00"
+
+        # ROR based affiliation
+        - id: 2
+          uri: "https://ror.org/01an7q238"
+          provenance: "ROR"
+          name: "University of California, Berkeley"
+          displayName: "University of California, Berkeley (berkeley.edu)"
+          searchName: "University of California, Berkeley | berkeley.edu | Cal Berkeley | UC Berkeley | University of California at Berkeley"
+          funder: 1
+          fundrefId: "100006978"
+          homepage: "https://www.berkeley.edu"
+          acronyms: '["UCB"]'
+          aliases: '["Cal Berkeley", "UC Berkeley", "University of California at Berkeley"]'
+          types: '["EDUCATION", "FUNDER"]'
+          logoURI: "path/to/logo2.png"
+          logoName: "logo2.png"
+          contactName: "Contact name 2"
+          contactEmail: "library2@example.com"
+          ssoEntityId: "ssoEntityId2"
+          feedbackEnabled: 1
+          feedbackMessage: "Feedback message 2"
+          feedbackEmails: '[]'
+          managed: 1
+          active: 1
+          apiTarget: "apiTarget"
+          createdById: 1
+          created: "2025-10-01 00:00:00"
+          modifiedById: 1
+          modified: "2025-10-01 00:00:00"

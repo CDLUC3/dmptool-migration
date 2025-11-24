@@ -9,9 +9,9 @@ MODEL (
     displayOrder INT NOT NULL,
     isDefault TINYINT(1) NOT NULL DEFAULT 0,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL
+    modified DATETIME NOT NULL
   ),
   audits (
     unique_values(columns := (uri, label), blocking := false)

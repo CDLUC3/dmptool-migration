@@ -2,14 +2,7 @@ test_versionedQuestions:
   model: migration.versioned_questions
 
   inputs:
-    dmp.questions:
-      columns:
-        id: INT
-        question_format_id: INT
-        text: MEDIUMTEXT
-        number: INT
-        created_at: DATETIME
-        updated_at: DATETIME
+    source_db.questions:
       rows:
         - id: 111
           question_format_id: 4 # Checkboxes
@@ -46,12 +39,7 @@ test_versionedQuestions:
           created_at: "2025-05-02T00:00:00Z"
           updated_at: "2025-05-03T00:00:00Z"
 
-    dmp.question_options:
-      columns:
-        question_id: INT
-        number: INT
-        is_default: BOOLEAN
-        text: VARCHAR(255)
+    source_db.question_options:
       rows:
         - question_id: 111
           number: 1
@@ -78,12 +66,7 @@ test_versionedQuestions:
           is_default: 0
           text: "Option C"
 
-    dmp.annotations:
-      columns:
-        question_id: INT
-        type: INT
-        org_id: INT
-        text: MEDIUMTEXT
+    source_db.annotations:
       rows:
         - question_id: 331
           type: 0

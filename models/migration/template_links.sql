@@ -18,9 +18,9 @@ MODEL (
     url VARCHAR(255),
     text VARCHAR(255),
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL
+    modified DATETIME NOT NULL
   ),
   audits (
     -- unique_combination_of_columns(columns := (templateId, url, text)),

@@ -6,33 +6,21 @@ MODEL (
     planMemberId INT UNSIGNED NOT NULL,
     memberRoleId INT UNSIGNED NOT NULL,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created DATETIME NOT NULL DEFAULT CURRENT_DATE,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_DATE,
   ),
   enabled true
 );
 
-WITH default_member_role AS (
-  SELECT id
-  FROM migration.member_roles
-  WHERE isDefault = 1
-  LIMIT 1
-)
-
-WITH default_super_admin AS (
-  SELECT id
-  FROM intermediate.users
-  WHERE role = 'SUPERADMIN'
-  ORDER BY id DESC LIMIT 1
-)
-
 SELECT
-    ROW_NUMBER() OVER (ORDER BY pm.id ASC) AS id,
-    pm.id AS planMemberId,
-    (SELECT id FROM default_member_role) AS memberRoleId,
-    pm.createdById,
-    pm.created,
-    pm.modifiedById,
-    pm.modified
-FROM migration.plan_members pm;
+  ROW_NUMBER() OVER () AS id,
+  pm.id AS planMemberId,
+  pjmr.memberRoleId,
+  pm.createdById,
+  pm.created,
+  pm.modifiedById,
+  pm.modified
+FROM migration.plan_members pm
+  JOIN migration.final_project_members pjm ON pm.projectMemberId = pjm.id
+    JOIN migration.project_member_roles pjmr ON pjm.id = pjmr.projectMemberId;
