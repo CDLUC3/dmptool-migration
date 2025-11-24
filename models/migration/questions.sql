@@ -32,9 +32,9 @@ MODEL (
     old_display_order INT,
     displayOrder INT NOT NULL,
     isDirty BOOLEAN NOT NULL DEFAULT 1,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT
   ),
   audits (

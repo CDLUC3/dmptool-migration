@@ -18,9 +18,9 @@ MODEL (
     uri VARCHAR(255) NOT NULL,
     description VARCHAR(255),
     parentResearchDomainId INT,
-    created TIMESTAMP NOT NULL,
+    created DATETIME NOT NULL,
     createdById INT,
-    modified TIMESTAMP NOT NULL,
+    modified DATETIME NOT NULL,
     modifiedById INT
   ),
   audits (

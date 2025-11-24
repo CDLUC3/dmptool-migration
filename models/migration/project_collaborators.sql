@@ -10,9 +10,9 @@ MODEL (
     userId INT UNSIGNED,
     accessLevel VARCHAR(8) NOT NULL,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created DATETIME NOT NULL DEFAULT CURRENT_DATE,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_DATE,
   ),
   enabled true
 );
@@ -21,7 +21,7 @@ SELECT
   ROW_NUMBER() OVER () AS id,
   c.old_plan_id AS old_plan_id,
   mp.id AS projectId,
-  c.email AS email,
+  TRIM(c.email) AS email,
   MAX(mp.createdById) AS invitedById,
   ue.userId,
   MAX(c.access) as accessLevel,
@@ -31,5 +31,5 @@ SELECT
   MAX(mp.modified) AS modified
 FROM intermediate.collaborators c
   LEFT JOIN migration.projects mp ON c.old_plan_id = mp.old_plan_id
-  JOIN migration.user_emails ue ON c.email = ue.email
+  JOIN migration.user_emails ue ON TRIM(LOWER(c.email)) = TRIM(LOWER(ue.email))
 GROUP BY c.old_plan_id, c.email, mp.id, ue.userId;

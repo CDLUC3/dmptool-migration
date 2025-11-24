@@ -11,9 +11,9 @@ MODEL (
     endDate VARCHAR(16),
     isTestProject TINYINT(1) NOT NULL DEFAULT 0,
     createdById INT UNSIGNED NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created DATETIME NOT NULL DEFAULT CURRENT_DATE,
     modifiedById INT UNSIGNED NOT NULL,
-    modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_DATE,
   ),
   enabled true
 );
@@ -28,8 +28,8 @@ WITH default_super_admin AS (
 SELECT
   ROW_NUMBER() OVER (ORDER BY p.id ASC) AS id,
   p.id AS old_plan_id,
-  p.title,
-  p.description AS abstractText,
+  TRIM(p.title) AS title,
+  TRIM(p.description) AS abstractText,
   rdm.new_id AS researchDomainId,
   DATE_FORMAT(p.start_date, '%Y-%m-%d') AS startDate,
   DATE_FORMAT(p.end_date, '%Y-%m-%d') AS endDate,
