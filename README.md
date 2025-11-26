@@ -62,6 +62,12 @@ mysql -u [username] -p -P [port] -h [host] -e "CREATE FULLTEXT INDEX idx_fulltex
 This does not work for mysql v9, so be sure to install v8!
 Note that you may need to use `127.0.0.1` instead of `localhost` for the host to avoid socket connection issues.
 
+## Fetching seed files
+
+You need to pull in several seed files. These can be found in our S3 buckets
+- Pilot project plan members: `aws s3 cp s://[PrivateBucketName]/pilot_project_members.csv ./seeds`
+- ROR affiliation data: 
+
 ## Setting up the ROR staging table (All the ROR records from the ROR data file)
 
 To create the `ror_staging` table you must add the ROR JSON data file to the `./data` directory and run the `python3 ./scripts/transform_ror.py` script to transform the JSON data into a format suitable for loading into MySQL. 

@@ -8,3 +8,6 @@ logs
 .cache
 __pycache__
 data
+
+seeds/pilot_project_members.csv
+
