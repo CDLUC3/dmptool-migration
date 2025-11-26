@@ -31,7 +31,7 @@ WITH default_template AS (
 
 max_id AS (
   SELECT COALESCE(MAX(id), 0) AS max_id_value
-  FROM dmptool.plans
+  FROM migration.plans
 ),
 
 sequenced_source_data AS (
