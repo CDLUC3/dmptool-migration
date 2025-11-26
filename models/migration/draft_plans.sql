@@ -3,7 +3,7 @@ MODEL (
   kind FULL,
   columns (
     id INT UNSIGNED NOT NULL,
-    old_draft_id INT UNSIGNED NOT NULL,
+    old_draft_id VARCHAR(255) NOT NULL,
     projectId INT UNSIGNED NOT NULL,
     versionedTemplateId INT UNSIGNED NOT NULL,
     title VARCHAR(255),
@@ -31,7 +31,7 @@ WITH default_template AS (
 
 max_id AS (
   SELECT COALESCE(MAX(id), 0) AS max_id_value
-  FROM migration.plans
+  FROM dmptool.plans
 ),
 
 sequenced_source_data AS (
