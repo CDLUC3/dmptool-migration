@@ -397,6 +397,50 @@ SELECT projectId, affiliationId, status, funderProjectNumber, grantId, funderOpp
        created, createdById, modified, modifiedById
 FROM migration.project_fundings;    -- 86,582 rows as of 2025-11-21
 
+-- Migrate pilot project uploaded DMPs
+INSERT INTO dmptool.projects (id, title, abstractText, startDate, endDate, isTestProject,
+                              created, createdById, modified, modifiedById)
+SELECT id, title, abstractText, startDate, endDate, isTestProject, created, createdById,
+       modified, modifiedById
+FROM migration.draft_projects;  -- 77 rows as of 2025-11-24
+
+-- Migrate pilot project collaborators
+INSERT IGNORE INTO dmptool.projectCollaborators (projectId, email, invitedById, userId, accessLevel,
+                                          created, createdById, modified, modifiedById)
+SELECT DISTINCT projectId, email, invitedById, userId, accessLevel, created, createdById, modified, modifiedById
+FROM migration.draft_project_collaborators;  -- 77 rows as of 2025-11-24
+
+-- Migrate pilot project fundings
+INSERT IGNORE INTO dmptool.projectFundings (projectId, affiliationId, status, funderProjectNumber, grantId,
+									 funderOpportunityNumber, created, createdById, modified, modifiedById)
+SELECT projectId, affiliationId, status, funderProjectNumber, grantId, funderOpportunityNumber,
+       created, createdById, modified, modifiedById
+FROM migration.draft_project_fundings;  -- 68 rows as of 2025-11-24
+
+-- Migrate pilot project members
+INSERT INTO dmptool.projectMembers (id, projectId, affiliationId, givenName, surName, email, orcid,
+										   isPrimaryContact, created, createdById, modified, modifiedById)
+SELECT DISTINCT id, projectId, affiliationId, givenName, surName, email, orcid,
+                isPrimaryContact, created, createdById, modified, modifiedById
+FROM migration.draft_project_members AS pm; -- 50 rows as of 2025-11-24
+
+-- Migrate pilot project member roles
+INSERT IGNORE INTO dmptool.projectMemberRoles (projectMemberId, memberRoleId, created, createdById, modified, modifiedById)
+SELECT DISTINCT projectMemberId, memberRoleId, created, createdById, modified, modifiedById
+FROM migration.draft_project_member_roles;  -- 92 rows as of 2025-11-24
+
+-- Ensure each draft project has a primary contact
+WITH projects_no_primary_contact AS (
+    SELECT pm.id projectId, MAX(pm.isPrimaryContact) AS max_primary
+    FROM migration.draft_projects dp JOIN dmptool.projectMembers pm ON dp.id = pm.projectId
+    GROUP BY dp.id, dp.title, pm.id, pm.email
+    HAVING max_primary = 0
+    ORDER BY pm.id
+)
+UPDATE dmptool.projectMembers AS pm JOIN migration.draft_projects AS dp ON pm.projectId = dp.id
+    SET pm.isPrimaryContact = 1
+WHERE pm.id IN (SELECT pnpc.projectId FROM projects_no_primary_contact AS pnpc);
+
 -- TODO: Determine why some versionedTemplateId are NULL. Related to missing affiliations?
 
 -- Migrate the plans
@@ -427,6 +471,38 @@ FROM migration.plan_member_roles;    -- 501,352 rows as of 2025-11-21
 INSERT IGNORE INTO dmptool.planFundings (planId, projectFundingId, created, createdById, modified, modifiedById)
 SELECT planId, projectFundingId, created, createdById, modified, modifiedById
 FROM migration.plan_fundings;    -- 77,886 rows as of 2025-11-21
+
+-- Migrate pilot project uploaded DMPs plans
+INSERT INTO dmptool.plans (id, projectId, versionedTemplateId, title, visibility, status, dmpId,   registeredById, registered, languageId, featured, created, createdById, modified, modifiedById)
+SELECT id, id, (SELECT id FROM dmptool.versionedTemplates WHERE bestPractice = 1 AND active = 1 LIMIT 1), title, visibility,
+  CASE WHEN dmp_id IS NOT NULL THEN 'COMPLETE' ELSE 'DRAFT' END,
+  dmp_id,
+  CASE WHEN dmp_id IS NOT NULL THEN modifiedById ELSE NULL END,
+  CASE WHEN dmp_id IS NOT NULL THEN modified ELSE NULL END,
+  'en-US',
+  0, created, createdById, modified, modifiedById
+FROM migration.draft_projects;    -- 77 rows as of 2025-11-24
+
+-- Migrate pilot project plan funding
+INSERT IGNORE INTO dmptool.planFundings (planId, projectFundingId, created, createdById, modified, modifiedById)
+SELECT dpf.projectId, pf.id, dpf.created, dpf.createdById, dpf.modified, dpf.modifiedById
+FROM migration.draft_project_fundings AS dpf
+  JOIN dmptool.projectFundings AS pf ON dpf.projectId = pf.projectId;  -- 68 rows as of 2025-11-24
+
+-- Migrate pilot project plan members
+INSERT IGNORE INTO dmptool.planMembers (id, planId, projectMemberId, isPrimaryContact, created, createdById, modified,
+								 modifiedById)
+SELECT pm.id, pm.projectId, pm.id, pm.isPrimaryContact, pm.created, pm.createdById, pm.modified, pm.modifiedById
+FROM dmptool.projectMembers AS pm
+  JOIN migration.draft_projects AS dp ON pm.projectId = dp.id; -- 50 rows as of 2025-11-24
+
+
+-- Migrate pilot project plan member roles
+INSERT IGNORE INTO dmptool.planMemberRoles (planMemberId, memberRoleId, created, createdById, modified, modifiedById)
+SELECT pmr.id, pmr.memberRoleId, pmr.created, pmr.createdById, pmr.modified, pmr.modifiedById
+FROM dmptool.projectMemberRoles AS pmr
+  JOIN dmptool.projectMembers AS pm ON pmr.projectMemberId = pm.id
+    JOIN migration.draft_projects AS dp ON pm.projectId = dp.id;  -- 92 rows as of 2025-11-24
 
 -- Migrate the works
 INSERT INTO dmptool.works (doi, created, createdById, modified, modifiedById)
