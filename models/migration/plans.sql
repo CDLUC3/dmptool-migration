@@ -37,7 +37,7 @@ SELECT
   TRIM(p.title) AS title,
   p.visibility,
   p.status,
-  p.dmp_id AS dmpId,
+  COALESCE(p.dmp_id, CONCAT('TEMP-', p.id)) AS dmpId,
   CASE WHEN p.dmp_id IS NOT NULL THEN u.id ELSE NULL END AS registeredById,
   CASE WHEN p.dmp_id IS NOT NULL THEN p.updated_at ELSE NULL END AS registered,
   p.language AS languageId,
