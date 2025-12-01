@@ -20,7 +20,7 @@ MODEL (
 
 WITH max_id AS (
   SELECT COALESCE(MAX(id), 0) AS max_id_value
-  FROM dmptool.projectFundings
+  FROM migration.project_fundings
 ),
 
 sequenced_source_data AS (
