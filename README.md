@@ -125,6 +125,32 @@ sqlmesh plan
 
 Munually run the SQL statements in the [Final Migrations file](docs/FinalMigrationSteps.sql) against the target database to load the transformed data.
 
+## Assigning DMP Ids
+
+```sql
+-- Example of setting DMP Ids manually via SQL (be sure to replace the DOI shoulder!)
+
+-- Update the Plans with a NULL dmpId
+UPDATE plans 
+SET dmpId = CONCAT('https://doi.org/11.22222/A1', HEX(RANDOM_BYTES(5)))
+WHERE dmpId IS NULL;
+
+-- Run a query to locate any duplicate dmpIds that may have been generated
+SELECT dmpId, COUNT(id) as nbrRecs FROM plans GROUP BY dmpId HAVING nbrRecs > 1;
+
+-- Run a query to fetch the duplicate dmpIds, sorting by modified
+SELECT id, modified, dmpId from plans 
+WHERE dmpId IN (
+'https://doi.org/11.22222/A1B2C3D4E5')
+order by dmpId, modified;
+
+-- Update the most recent plans so they have a different dmpId
+UPDATE plans 
+SET dmpId = CONCAT('https://doi.org/10.48321/D1', HEX(RANDOM_BYTES(6)))
+WHERE dmpId IS NULL;
+WHERE id IN(136344);
+```
+
 ## Validation
 
 Load the application and login as the 2 test users created during the migration process:
