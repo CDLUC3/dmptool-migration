@@ -144,6 +144,8 @@ WHERE dmpId IN (
 'https://doi.org/11.22222/A1B2C3D4E5')
 order by dmpId, modified;
 
+-- !!!If the plans are both registered then these may actually be DUPLICATE records, so decide if they need to be deleted!!!
+
 -- Update the most recent plans so they have a different dmpId
 UPDATE plans 
 SET dmpId = CONCAT('https://doi.org/10.48321/D1', HEX(RANDOM_BYTES(6)))
